@@ -1,10 +1,11 @@
 package utils;
 
 /**
- * @author LLT
  * @param <T>
+ * @author LLT
  */
 @FunctionalInterface
 public interface Predicate<T> {
-  boolean apply(T val);
+
+    boolean apply(T val);
 }
