@@ -1,5 +1,6 @@
 package testcase.runner;
 
+import java.util.Arrays;
 import java.util.Objects;
 import log.Log;
 import testcase.TestCase;
@@ -32,6 +33,13 @@ public abstract class AbstractTestCaseRunner implements TestCaseRunner {
     }
 
     public static void main(String[] args) {
+        if (args.length != 3) {
+            throw new IllegalArgumentException(
+                Log.genMessage(
+                    "The number of arguments should be 3, with [test case class name], [test case method name], and [test case type], but "
+                        + Arrays.toString(
+                        args) + " is given", AbstractTestCaseRunner.class));
+        }
         /*
         The input of the main is the following:
         1. The name of test case class.
@@ -49,6 +57,14 @@ public abstract class AbstractTestCaseRunner implements TestCaseRunner {
     }
 
     /**
+     * This method will be executed when all test case is executed. <br/> The content of this method
+     * will be injected by instrumentation agent. <br/>
+     */
+    protected void $exitProgram(final String resultMessage) {
+        // For instrumentation agent
+    }
+
+    /**
      * This method will be executed whenever a test case is finished. <br/> The content of this
      * method will be injected by instrumentation agent. <br/>
      */
@@ -61,14 +77,6 @@ public abstract class AbstractTestCaseRunner implements TestCaseRunner {
      * method will be injected by instrumentation agent. <br/>
      */
     protected void $testStarted(final String className, final String methodName) {
-        // For instrumentation agent
-    }
-
-    /**
-     * This method will be executed when all test case is executed. <br/> The content of this method
-     * will be injected by instrumentation agent. <br/>
-     */
-    protected void $exitProgram(final String resultMessage) {
         // For instrumentation agent
     }
 }
