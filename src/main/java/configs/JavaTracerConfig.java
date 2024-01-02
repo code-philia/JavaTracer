@@ -35,7 +35,12 @@ public class JavaTracerConfig {
     }
 
     public static String detectJavaTracerJarPath() {
-        return JavaTracerConfig.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        String javaTracerJarPath = JavaTracerConfig.class.getProtectionDomain().getCodeSource()
+            .getLocation().getPath();
+        if (javaTracerJarPath.startsWith("/")) {
+            javaTracerJarPath = javaTracerJarPath.substring(1);
+        }
+        return javaTracerJarPath;
     }
 
     public static JavaTracerConfig getInstance() {

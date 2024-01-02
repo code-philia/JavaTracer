@@ -1,5 +1,6 @@
 package projectsexecutors;
 
+import configs.JavaTracerConfig;
 import configs.projectconfigs.MavenProjectConfig;
 import exceptions.ProjectNotCompilableException;
 import java.io.BufferedReader;
@@ -29,6 +30,8 @@ public class MavenProjectExecutor extends AbstractProjectExecutor {
         List<String> commands = new ArrayList<>();
         commands.add(this.mavenProjectConfig.getJavaHome().getExePath());
         commands.add("-Duser.dir=" + projectRootPath);
+        commands.add(
+            "-javaagent:" + JavaTracerConfig.getInstance().getJavaTracerJarPath());
         commands.add("-cp");
         commands.add(String.join(";", this.mavenProjectConfig.getClassPaths()));
         commands.add(this.mavenProjectConfig.getLaunchClass());
