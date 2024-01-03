@@ -1,21 +1,26 @@
 package org.cophi.javatracer.configs.javatracer;
 
 import groovy.lang.Singleton;
-import org.cophi.javatracer.log.LogType;
+import org.cophi.javatracer.core.AgentParameters;
 
 @Singleton
-public class JavaTracerConfig {
+public class JavaTracerConfig implements AgentParameters {
 
     public static final int DEFAULT_STEP_LIMIT = 100000;
     public static final int DEFAULT_DEBUG_PORT = 8000;
     public static final int DEFAULT_VARIABLE_LAYER = 2;
     public static final int DEFAULT_DISTRIBUTION_LAYER = 3;
-    public static final LogType DEFAULT_LOG_TYPE = LogType.INFO;
     public static final boolean DEFAULT_IS_DEBUG_MODE = false;
     public static final boolean DEFAULT_APPLY_LIBRARY_OPTIMIZATION = false;
+    public static final String DEBUG_MODE_KEY = "debug_mode";
+    public static final String LOG_TYPE_KEY = "log_type";
+    public static final String STEP_LIMIT_KEY = "step_limit";
+    public static final String DEBUG_PORT_KEY = "debug_port";
+    public static final String VARIABLE_LAYER_KEY = "variable_layer";
+    public static final String PRE_CHECK_KEY = "pre_check";
+    public static final String RUN_ID_KEY = "run_id";
     public boolean isDebugMode;
     public boolean applyLibraryOptimization;
-    public LogType logType;
     protected int stepLimit;
     protected int debugPort;
     protected int variableLayer;
@@ -30,7 +35,6 @@ public class JavaTracerConfig {
         this.variableLayer = DEFAULT_VARIABLE_LAYER;
         this.applyLibraryOptimization = DEFAULT_APPLY_LIBRARY_OPTIMIZATION;
         this.distributionLayer = DEFAULT_DISTRIBUTION_LAYER;
-        this.logType = DEFAULT_LOG_TYPE;
         this.javaTracerJarPath = JavaTracerConfig.detectJavaTracerJarPath();
     }
 
@@ -45,6 +49,16 @@ public class JavaTracerConfig {
 
     public static JavaTracerConfig getInstance() {
         return InstanceHolder.instance;
+    }
+
+    public JavaTracerAgentParameters genParameters() {
+        JavaTracerAgentParameters builder = new JavaTracerAgentParameters();
+        return builder;
+    }
+
+    @Override
+    public void update(JavaTracerAgentParameters parameters) {
+
     }
 
     public String getJavaTracerJarPath() {

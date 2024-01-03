@@ -1,18 +1,29 @@
 package org.cophi.javatracer.configs.projectconfigs;
 
-import org.cophi.javatracer.configs.javatracer.JavaHome;
-import org.cophi.javatracer.exceptions.ProjectConfigException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import org.cophi.javatracer.configs.javatracer.JavaHome;
+import org.cophi.javatracer.configs.javatracer.JavaTracerAgentParameters;
+import org.cophi.javatracer.core.AgentParameters;
+import org.cophi.javatracer.exceptions.ProjectConfigException;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.testcase.TestCase;
+import org.cophi.javatracer.testcase.runner.AbstractTestCaseRunner;
 
-public class ProjectConfig {
+public class ProjectConfig implements AgentParameters {
 
-    protected final static String TEST_CASE_LAUNCH_CLASS = "testcase.runner.AbstractTestCaseRunner";
+    public static final String WORKING_DIR_KEY = "working_dir";
+    public static final String LAUNCH_CLASS_KEY = "launch_class";
+    public static final String JAVA_HOME_KEY = "java_home";
+    public static final String IS_TEST_CASE_KEY = "is_test_case";
+    public static final String TEST_CASE_CLASS_NAME_KEY = "test_case_class_name";
+    public static final String TEST_CASE_METHOD_NAME_KEY = "test_case_method_name";
+
+    protected final static String TEST_CASE_LAUNCH_CLASS = AbstractTestCaseRunner.class.getCanonicalName();
+    protected final static String NULL = "null";
     protected String projectRootPath = null;
     protected JavaHome javaHome = null;
     protected List<String> classPaths = new LinkedList<>();
@@ -31,6 +42,35 @@ public class ProjectConfig {
     public void addClassPath(final String classPath) {
         this.verifyPathString(classPath);
         this.classPaths.add(classPath);
+    }
+
+    public JavaTracerAgentParameters genParameters() {
+        JavaTracerAgentParameters parameters = new JavaTracerAgentParameters();
+        parameters.setParameter(ProjectConfig.JAVA_HOME_KEY,
+            this.javaHome.path());
+        parameters.setParameter(ProjectConfig.LAUNCH_CLASS_KEY,
+            this.getLaunchClass());
+        parameters.setParameter(ProjectConfig.IS_TEST_CASE_KEY,
+            String.valueOf(this.isRunningTestCase));
+        parameters.setParameter(ProjectConfig.TEST_CASE_CLASS_NAME_KEY,
+            this.testCase == null ? ProjectConfig.NULL : this.testCase.testClassName);
+        parameters.setParameter(ProjectConfig.TEST_CASE_METHOD_NAME_KEY,
+            this.testCase == null ? ProjectConfig.NULL : this.testCase.testMethodName);
+        return parameters;
+    }
+
+    @Override
+    public void update(JavaTracerAgentParameters parameters) {
+        this.setJavaHome(new JavaHome(parameters.getParameter(ProjectConfig.JAVA_HOME_KEY)));
+        this.setLaunchClass(parameters.getParameter(ProjectConfig.LAUNCH_CLASS_KEY));
+        this.setIsTestCase(Boolean.parseBoolean(
+            parameters.getParameter(ProjectConfig.IS_TEST_CASE_KEY)));
+        if (this.isRunningTestCase()) {
+            this.setTestCase(new TestCase(
+                parameters.getParameter(ProjectConfig.TEST_CASE_CLASS_NAME_KEY),
+                parameters.getParameter(ProjectConfig.TEST_CASE_METHOD_NAME_KEY)));
+        }
+        Log.debug("test launch class: " + this.getTestCase().testClassName);
     }
 
     public List<String> getClassPaths() {
@@ -62,7 +102,7 @@ public class ProjectConfig {
     }
 
     public String getLaunchClass() {
-        return this.launchClass;
+        return this.isRunningTestCase ? ProjectConfig.TEST_CASE_LAUNCH_CLASS : this.launchClass;
     }
 
     public void setLaunchClass(final String launchClass) {
@@ -98,13 +138,8 @@ public class ProjectConfig {
     }
 
     public void setTestCase(TestCase testCase) {
-        if (testCase == null) {
-            this.setIsTestCase(false);
-        } else {
-            this.setIsTestCase(true);
-            this.setLaunchClass(ProjectConfig.TEST_CASE_LAUNCH_CLASS);
-            this.testCase = testCase;
-        }
+        this.setIsTestCase(testCase != null);
+        this.testCase = testCase;
     }
 
     public String getTestCodePath() {
