@@ -23,7 +23,7 @@ public class ProjectConfig {
     protected String testCodePath = null;
     protected List<String> includedClassNames = new LinkedList<>();
     protected List<String> excludedClassName = new LinkedList<>();
-    protected JavaBuildTools javaBuildTools = null;
+    protected JavaBuildTools javaBuildTools = JavaBuildTools.DEFAULT;
 
     public ProjectConfig() {
     }
