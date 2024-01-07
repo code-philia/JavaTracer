@@ -1,13 +1,13 @@
 package org.cophi.javatracer.projectsexecutors;
 
-import org.cophi.javatracer.configs.javatracer.JavaTracerConfig;
-import org.cophi.javatracer.configs.projectconfigs.MavenProjectConfig;
-import org.cophi.javatracer.exceptions.ProjectNotCompilableException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import org.cophi.javatracer.configs.JavaTracerConfig;
+import org.cophi.javatracer.configs.MavenProjectConfig;
+import org.cophi.javatracer.exceptions.ProjectNotCompilableException;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.utils.MavenUtils;
 

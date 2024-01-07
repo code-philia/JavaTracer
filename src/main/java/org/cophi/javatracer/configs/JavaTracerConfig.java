@@ -1,4 +1,4 @@
-package org.cophi.javatracer.configs.javatracer;
+package org.cophi.javatracer.configs;
 
 import groovy.lang.Singleton;
 import org.cophi.javatracer.core.AgentParameters;

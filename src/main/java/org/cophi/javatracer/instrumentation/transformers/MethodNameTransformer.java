@@ -11,7 +11,7 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionFactory;
 import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
-import org.cophi.javatracer.configs.projectconfigs.ProjectConfig;
+import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.log.LogType;
 import org.cophi.javatracer.utils.ClassNameUtils;

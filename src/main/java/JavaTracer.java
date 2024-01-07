@@ -1,6 +1,6 @@
-import org.cophi.javatracer.configs.javatracer.JavaHome;
-import org.cophi.javatracer.configs.projectconfigs.MavenProjectConfig;
-import org.cophi.javatracer.configs.projectconfigs.ProjectConfig;
+import org.cophi.javatracer.configs.JavaHome;
+import org.cophi.javatracer.configs.MavenProjectConfig;
+import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.exceptions.ProjectNotCompilableException;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.model.trace.Trace;

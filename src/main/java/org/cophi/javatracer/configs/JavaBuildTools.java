@@ -1,4 +1,4 @@
-package org.cophi.javatracer.configs.projectconfigs;
+package org.cophi.javatracer.configs;
 
 public enum JavaBuildTools {
     MAVEN,

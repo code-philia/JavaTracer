@@ -1,6 +1,6 @@
 package org.cophi.javatracer.log;
 
-import org.cophi.javatracer.configs.javatracer.JavaTracerAgentParameters;
+import org.cophi.javatracer.configs.JavaTracerAgentParameters;
 import org.cophi.javatracer.core.AgentParameters;
 
 public class LogConfig implements AgentParameters {

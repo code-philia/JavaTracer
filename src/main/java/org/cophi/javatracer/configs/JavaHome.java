@@ -1,4 +1,4 @@
-package org.cophi.javatracer.configs.javatracer;
+package org.cophi.javatracer.configs;
 
 import java.nio.file.Paths;
 

@@ -1,12 +1,10 @@
-package org.cophi.javatracer.configs.projectconfigs;
+package org.cophi.javatracer.configs;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import org.cophi.javatracer.configs.javatracer.JavaHome;
-import org.cophi.javatracer.configs.javatracer.JavaTracerAgentParameters;
 import org.cophi.javatracer.core.AgentParameters;
 import org.cophi.javatracer.exceptions.ProjectConfigException;
 import org.cophi.javatracer.log.Log;

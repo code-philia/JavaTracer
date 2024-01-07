@@ -1,9 +1,9 @@
 package org.cophi.javatracer.instrumentation;
 
 import java.lang.instrument.Instrumentation;
-import org.cophi.javatracer.configs.javatracer.JavaTracerAgentParameters;
-import org.cophi.javatracer.configs.javatracer.JavaTracerConfig;
-import org.cophi.javatracer.configs.projectconfigs.ProjectConfig;
+import org.cophi.javatracer.configs.JavaTracerAgentParameters;
+import org.cophi.javatracer.configs.JavaTracerConfig;
+import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.instrumentation.transformers.MethodNameTransformer;
 import org.cophi.javatracer.log.LogConfig;
 
