@@ -16,6 +16,7 @@ public class CommandLineBuilder {
         commands.add(javaPath);
 
         final String projectRootPath = projectConfig.getProjectRootPath();
+        commands.add("-noverify");
         commands.add("-Duser.dir=" + projectRootPath);
 
         final String javaTracerJarPath = JavaTracerConfig.getInstance().getJavaTracerJarPath();

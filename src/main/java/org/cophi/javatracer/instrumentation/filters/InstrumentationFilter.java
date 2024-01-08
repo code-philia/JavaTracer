@@ -65,11 +65,11 @@ public class InstrumentationFilter {
     /**
      * We use the regular expression to match the class names for included external class. <br/>
      */
-    protected WildcardMatcher includedLibraryClassesMatcher = null;
+    protected WildcardMatcher includedClassesMatcher = null;
     /**
      * We use the regular expression to match the class names for excluded external class. <br/>
      */
-    protected WildcardMatcher excludedLibraryClassesMatcher = null;
+    protected WildcardMatcher excludedClassesMatcher = null;
 
     private InstrumentationFilter() {
     }
@@ -129,18 +129,18 @@ public class InstrumentationFilter {
                 }
             }
         }
-        this.includedLibraryClassesMatcher = new WildcardMatcher(
+        this.includedClassesMatcher = new WildcardMatcher(
             projectConfig.getIncludedClassNames());
-        this.excludedLibraryClassesMatcher = new WildcardMatcher(
+        this.excludedClassesMatcher = new WildcardMatcher(
             projectConfig.getExcludedClassNames());
     }
 
     public boolean isExcludedByUser(final String className) {
-        return this.excludedLibraryClassesMatcher.matches(className);
+        return this.excludedClassesMatcher.matches(className);
     }
 
     public boolean isIncludedByUser(final String className) {
-        return this.includedLibraryClassesMatcher.matches(className);
+        return this.includedClassesMatcher.matches(className);
     }
 
     /**
@@ -164,13 +164,12 @@ public class InstrumentationFilter {
      */
     public boolean pass(final String classFileName, final String sourcePath) {
         final String className = ClassNameUtils.classFileNameToCanonicalName(classFileName);
-        if (!JDKFilter.contains(ClassNameUtils.classFileNameToCanonicalName(classFileName))) {
+        if (JDKFilter.contains(ClassNameUtils.classFileNameToCanonicalName(classFileName))) {
             this.updateRecord(className, ClassType.EXTERNAL, false);
             return false;
         }
 
         ClassType classType = this.detectClassType(sourcePath);
-
         if (this.isIncludedByUser(className)) {
             this.updateRecord(className, classType, true);
             return true;
@@ -207,11 +206,11 @@ public class InstrumentationFilter {
 
     protected boolean matchExternalIncludes(final String classFileName, boolean match) {
         final String className = ClassNameUtils.classFileNameToCanonicalName(classFileName);
-        if (!match && (this.includedLibraryClassesMatcher != null)) {
-            match = this.includedLibraryClassesMatcher.matches(className);
+        if (!match && (this.includedClassesMatcher != null)) {
+            match = this.includedClassesMatcher.matches(className);
         }
-        if (this.excludedLibraryClassesMatcher != null) {
-            match &= !this.excludedLibraryClassesMatcher.matches(className);
+        if (this.excludedClassesMatcher != null) {
+            match &= !this.excludedClassesMatcher.matches(className);
         }
         return match;
     }

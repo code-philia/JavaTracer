@@ -58,6 +58,9 @@ public class WildcardMatcher {
     }
 
     public boolean matches(final String s) {
+        if (this.pattern == null) {
+            return false;
+        }
         return this.pattern.matcher(s).matches();
     }
 
@@ -67,6 +70,9 @@ public class WildcardMatcher {
     }
 
     protected Pattern initPatternMatcher(final List<String> expressions) {
+        if (expressions == null || expressions.isEmpty()) {
+            return null;
+        }
         final StringBuilder regex = new StringBuilder(expressions.size() * 2);
         boolean next = false;
         for (final String expression : expressions) {

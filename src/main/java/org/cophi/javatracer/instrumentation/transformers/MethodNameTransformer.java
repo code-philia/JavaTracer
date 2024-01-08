@@ -2,6 +2,9 @@ package org.cophi.javatracer.instrumentation.transformers;
 
 import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
@@ -12,6 +15,7 @@ import org.apache.bcel.generic.InstructionFactory;
 import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.cophi.javatracer.configs.ProjectConfig;
+import org.cophi.javatracer.instrumentation.filters.InstrumentationFilter;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.log.LogType;
 import org.cophi.javatracer.utils.ClassNameUtils;
@@ -25,17 +29,36 @@ public class MethodNameTransformer implements ClassFileTransformer {
     }
 
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
+    public byte[] transform(ClassLoader loader, String classFileName, Class<?> classBeingRedefined,
         ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        String targetClassName =
-            this.projectConfig.isRunningTestCase() ? this.projectConfig.getTestCase().testClassName
-                : this.projectConfig.getLaunchClass();
-        targetClassName = ClassNameUtils.canonicalToBinaryName(targetClassName);
-        byte[] resultBuffer = classfileBuffer;
-        if (targetClassName.equals(className)) {
-            resultBuffer = this.insertMethodName(classfileBuffer);
+        try {
+            InstrumentationFilter filter = InstrumentationFilter.getInstance();
+            if (protectionDomain != null) {
+                CodeSource codeSource = protectionDomain.getCodeSource();
+                if ((codeSource == null) || (codeSource.getLocation() == null)) {
+                    return classfileBuffer;
+                }
+                URL srcLocation = codeSource.getLocation();
+                String path = Paths.get(srcLocation.toURI()).toString();
+                if (!filter.pass(classFileName, path)) {
+                    return classfileBuffer;
+                }
+                String targetClassName =
+                    this.projectConfig.isRunningTestCase()
+                        ? this.projectConfig.getTestCase().testClassName
+                        : this.projectConfig.getLaunchClass();
+                targetClassName = ClassNameUtils.canonicalToClassFileName(targetClassName);
+                byte[] resultBuffer = classfileBuffer;
+                if (targetClassName.equals(classFileName)) {
+                    resultBuffer = this.insertMethodName(classfileBuffer);
+                }
+                return resultBuffer;
+            }
+            return classfileBuffer;
+        } catch (Exception e) {
+            Log.error("Error in MethodNameTransformer: " + e.getMessage());
+            return classfileBuffer;
         }
-        return resultBuffer;
     }
 
     protected byte[] insertMethodName(final byte[] classfileBuffer) {

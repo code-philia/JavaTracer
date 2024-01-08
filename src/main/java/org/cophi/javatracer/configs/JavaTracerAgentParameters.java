@@ -10,6 +10,7 @@ public class JavaTracerAgentParameters {
 
     public static final String DELIMITER = "~";
     public static final String ASSIGN_SYMBOL = "=";
+    public static final String NULL = "null";
     protected Map<String, String> parameters = new HashMap<>();
 
     public JavaTracerAgentParameters() {
@@ -35,7 +36,13 @@ public class JavaTracerAgentParameters {
             } else {
                 throw new IllegalArgumentException(
                     Log.genMessage(
-                        "Correct parameter string should following the format: parameterName1=parameterValue1;parameterName2=parameterValue2;... Invalid parameter string is given: "
+                        ("Correct parameter string should following the format: "
+                            + "parameterName1`%s`parameterValue1`%s`parameterName2`%s`parameterValue2`%s`... "
+                            + "Invalid parameter string is given: ").formatted(
+                            JavaTracerAgentParameters.ASSIGN_SYMBOL,
+                            JavaTracerAgentParameters.DELIMITER,
+                            JavaTracerAgentParameters.ASSIGN_SYMBOL,
+                            JavaTracerAgentParameters.DELIMITER)
                             + parameterString,
                         JavaTracerAgentParameters.class));
             }

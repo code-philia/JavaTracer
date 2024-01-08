@@ -5,6 +5,8 @@ import org.cophi.javatracer.configs.MavenProjectConfig;
 import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.exceptions.ProjectNotCompilableException;
 import org.cophi.javatracer.log.Log;
+import org.cophi.javatracer.log.LogConfig;
+import org.cophi.javatracer.log.LogType;
 import org.cophi.javatracer.model.Trace;
 import org.cophi.javatracer.projects.executors.ProjectExecutor;
 import org.cophi.javatracer.testcase.TestCase;
@@ -30,6 +32,7 @@ public class JavaTracer {
             "testReducedFactory_int_int");
         config.setTestCase(testCase);
 
+        LogConfig.getInstance().setLogType(LogType.DEBUG);
         ProjectExecutor executor = new ProjectExecutor(config);
         executor.executeProject();
     }

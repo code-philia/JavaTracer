@@ -19,6 +19,13 @@ public class ProjectConfig implements AgentParameters {
     public static final String IS_TEST_CASE_KEY = "is_test_case";
     public static final String TEST_CASE_CLASS_NAME_KEY = "test_case_class_name";
     public static final String TEST_CASE_METHOD_NAME_KEY = "test_case_method_name";
+    public static final String SOURCE_CODE_PATH_KEY = "source_code_path";
+    public static final String TEST_CODE_PATH_KEY = "test_code_path";
+    public static final String INCLUDE_CLASS_KEY = "include_classes";
+    public static final String EXCLUDE_CLASS_KEY = "exclude_classes";
+    public static final String JAVA_BUILD_TOOL_KEY = "java_build_tool";
+    public static final String CLASS_NAME_DELIMITER = ">";
+    public static final String CLASS_PATHS_KEY = "class_paths";
 
     protected final static String TEST_CASE_LAUNCH_CLASS = AbstractTestCaseRunner.class.getCanonicalName();
     protected final static String NULL = "null";
@@ -54,6 +61,20 @@ public class ProjectConfig implements AgentParameters {
             this.testCase == null ? ProjectConfig.NULL : this.testCase.testClassName);
         parameters.setParameter(ProjectConfig.TEST_CASE_METHOD_NAME_KEY,
             this.testCase == null ? ProjectConfig.NULL : this.testCase.testMethodName);
+        parameters.setParameter(ProjectConfig.WORKING_DIR_KEY, this.projectRootPath);
+        parameters.setParameter(ProjectConfig.SOURCE_CODE_PATH_KEY, this.sourceCodePath);
+        parameters.setParameter(ProjectConfig.TEST_CODE_PATH_KEY, this.testCodePath);
+        parameters.setParameter(ProjectConfig.INCLUDE_CLASS_KEY,
+            this.includedClassNames.isEmpty() ? JavaTracerAgentParameters.NULL :
+                String.join(ProjectConfig.CLASS_NAME_DELIMITER, this.includedClassNames));
+        parameters.setParameter(ProjectConfig.EXCLUDE_CLASS_KEY,
+            this.excludedClassName.isEmpty() ? JavaTracerAgentParameters.NULL :
+                String.join(ProjectConfig.CLASS_NAME_DELIMITER, this.excludedClassName));
+        parameters.setParameter(ProjectConfig.JAVA_BUILD_TOOL_KEY,
+            this.javaBuildTools.name());
+        parameters.setParameter(ProjectConfig.CLASS_PATHS_KEY,
+            this.classPaths.isEmpty() ? JavaTracerAgentParameters.NULL :
+                String.join(ProjectConfig.CLASS_NAME_DELIMITER, this.classPaths));
         return parameters;
     }
 
@@ -68,7 +89,29 @@ public class ProjectConfig implements AgentParameters {
                 parameters.getParameter(ProjectConfig.TEST_CASE_CLASS_NAME_KEY),
                 parameters.getParameter(ProjectConfig.TEST_CASE_METHOD_NAME_KEY)));
         }
-        Log.debug("test launch class: " + this.getTestCase().testClassName);
+        this.setProjectRootPath(parameters.getParameter(ProjectConfig.WORKING_DIR_KEY));
+        this.setSourceCodePath(parameters.getParameter(ProjectConfig.SOURCE_CODE_PATH_KEY));
+        this.setTestCodePath(parameters.getParameter(ProjectConfig.TEST_CODE_PATH_KEY));
+
+        final String includeClassesStr = parameters.getParameter(ProjectConfig.INCLUDE_CLASS_KEY);
+        if (!includeClassesStr.equals(JavaTracerAgentParameters.NULL)) {
+            this.setIncludedClassNames(List.of(includeClassesStr.split(
+                ProjectConfig.CLASS_NAME_DELIMITER)));
+        }
+
+        final String excludeClassesStr = parameters.getParameter(ProjectConfig.EXCLUDE_CLASS_KEY);
+        if (!excludeClassesStr.equals(JavaTracerAgentParameters.NULL)) {
+            this.setExcludedClassNames(List.of(excludeClassesStr.split(
+                ProjectConfig.CLASS_NAME_DELIMITER)));
+        }
+        this.setJavaBuildTools(JavaBuildTools.valueOf(
+            parameters.getParameter(ProjectConfig.JAVA_BUILD_TOOL_KEY)));
+
+        final String classPathStr = parameters.getParameter(ProjectConfig.CLASS_PATHS_KEY);
+        if (!classPathStr.equals(JavaTracerAgentParameters.NULL)) {
+            this.setClassPaths(List.of(classPathStr.split(
+                ProjectConfig.CLASS_NAME_DELIMITER)));
+        }
     }
 
     public List<String> getClassPaths() {
@@ -79,6 +122,22 @@ public class ProjectConfig implements AgentParameters {
         Objects.requireNonNull(classPaths,
             Log.genMessage("The given classPaths is null.", this.getClass()));
         this.classPaths = classPaths;
+    }
+
+    public List<String> getExcludedClassNames() {
+        return this.excludedClassName;
+    }
+
+    public void setExcludedClassNames(List<String> excludedClassNames) {
+        this.excludedClassName = excludedClassNames;
+    }
+
+    public List<String> getIncludedClassNames() {
+        return includedClassNames;
+    }
+
+    public void setIncludedClassNames(List<String> includedClassNames) {
+        this.includedClassNames = includedClassNames;
     }
 
     public JavaBuildTools getJavaBuildTool() {
@@ -197,5 +256,6 @@ public class ProjectConfig implements AgentParameters {
                 Log.genMessage("The given path string is empty.", this.getClass()));
         }
     }
+
 
 }
