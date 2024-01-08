@@ -5,7 +5,7 @@ import org.cophi.javatracer.configs.MavenProjectConfig;
 import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.exceptions.ProjectNotCompilableException;
 import org.cophi.javatracer.log.Log;
-import org.cophi.javatracer.model.trace.Trace;
+import org.cophi.javatracer.model.Trace;
 import org.cophi.javatracer.projects.executors.ProjectExecutor;
 import org.cophi.javatracer.testcase.TestCase;
 
@@ -21,12 +21,13 @@ public class JavaTracer {
         JavaHome javaHome = new JavaHome("C:\\Program Files\\Java\\jdk-17");
         System.out.println(javaHome);
         MavenProjectConfig config = new MavenProjectConfig(
-            "C:\\Users\\WYK\\IdeaProjects\\JavaTracer\\src\\test\\bugs\\MavenDummyProject",
+            "C:\\Users\\WYK\\IdeaProjects\\JavaTracer\\src\\test\\bugs\\lang22",
             true);
         config.setJavaHome(javaHome);
         config.setLaunchClass("org.example.Main");
 
-        TestCase testCase = new TestCase("org.example.TestClassTest", "add");
+        TestCase testCase = new TestCase("org.apache.commons.lang3.math.FractionTest",
+            "testReducedFactory_int_int");
         config.setTestCase(testCase);
 
         ProjectExecutor executor = new ProjectExecutor(config);
