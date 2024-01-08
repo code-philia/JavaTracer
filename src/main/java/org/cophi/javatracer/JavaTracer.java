@@ -1,10 +1,12 @@
+package org.cophi.javatracer;
+
 import org.cophi.javatracer.configs.JavaHome;
 import org.cophi.javatracer.configs.MavenProjectConfig;
 import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.exceptions.ProjectNotCompilableException;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.model.trace.Trace;
-import org.cophi.javatracer.projectsexecutors.MavenProjectExecutor;
+import org.cophi.javatracer.projects.executors.ProjectExecutor;
 import org.cophi.javatracer.testcase.TestCase;
 
 public class JavaTracer {
@@ -27,7 +29,7 @@ public class JavaTracer {
         TestCase testCase = new TestCase("org.example.TestClassTest", "add");
         config.setTestCase(testCase);
 
-        MavenProjectExecutor executor = new MavenProjectExecutor(config);
+        ProjectExecutor executor = new ProjectExecutor(config);
         executor.executeProject();
     }
 

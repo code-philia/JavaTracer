@@ -81,14 +81,8 @@ public class ProjectConfig implements AgentParameters {
         this.classPaths = classPaths;
     }
 
-    public JavaBuildTools getJavaBuildTools() {
+    public JavaBuildTools getJavaBuildTool() {
         return this.javaBuildTools;
-    }
-
-    public void setJavaBuildTools(final JavaBuildTools javaBuildTools) {
-        Objects.requireNonNull(javaBuildTools,
-            Log.genMessage("The given java build tools is null.", this.getClass()));
-        this.javaBuildTools = javaBuildTools;
     }
 
     public JavaHome getJavaHome() {
@@ -158,6 +152,12 @@ public class ProjectConfig implements AgentParameters {
         if (!this.isRunningTestCase) {
             this.testCase = null;
         }
+    }
+
+    public void setJavaBuildTools(final JavaBuildTools javaBuildTools) {
+        Objects.requireNonNull(javaBuildTools,
+            Log.genMessage("The given java build tools is null.", this.getClass()));
+        this.javaBuildTools = javaBuildTools;
     }
 
     public void updateFrameworkInfo() {

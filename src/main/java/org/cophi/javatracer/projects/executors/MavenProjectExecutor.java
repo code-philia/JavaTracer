@@ -1,4 +1,4 @@
-package org.cophi.javatracer.projectsexecutors;
+package org.cophi.javatracer.projects.executors;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -11,15 +11,14 @@ import org.cophi.javatracer.exceptions.ProjectNotCompilableException;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.utils.MavenUtils;
 
-public class MavenProjectExecutor extends AbstractProjectExecutor {
+public class MavenProjectExecutor {
 
     protected final MavenProjectConfig mavenProjectConfig;
 
     public MavenProjectExecutor(final MavenProjectConfig mavenProjectConfig) {
         this.mavenProjectConfig = mavenProjectConfig;
     }
-
-    @Override
+    
     public void executeProject() throws ProjectNotCompilableException {
         final String projectRootPath = this.mavenProjectConfig.getProjectRootPath();
         final String mavenHome = this.mavenProjectConfig.getMavenHome();

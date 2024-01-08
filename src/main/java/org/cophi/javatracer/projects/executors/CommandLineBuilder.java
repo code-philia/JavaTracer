@@ -1,0 +1,46 @@
+package org.cophi.javatracer.projects.executors;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.cophi.javatracer.configs.JavaTracerAgentParameters;
+import org.cophi.javatracer.configs.JavaTracerConfig;
+import org.cophi.javatracer.configs.ProjectConfig;
+import org.cophi.javatracer.log.LogConfig;
+
+public class CommandLineBuilder {
+
+    public static List<String> buildCommand(final ProjectConfig projectConfig) {
+        List<String> commands = new ArrayList<>();
+
+        final String javaPath = projectConfig.getJavaHome().getExePath();
+        commands.add(javaPath);
+
+        final String projectRootPath = projectConfig.getProjectRootPath();
+        commands.add("-Duser.dir=" + projectRootPath);
+
+        final String javaTracerJarPath = JavaTracerConfig.getInstance().getJavaTracerJarPath();
+        commands.add("-javaagent:" + javaTracerJarPath + "="
+            + CommandLineBuilder.constructJavaTraceAgentParameter(projectConfig));
+
+        commands.add("-cp");
+        commands.add(String.join(";", projectConfig.getClassPaths()));
+        commands.add(projectConfig.getLaunchClass());
+
+        if (projectConfig.isRunningTestCase()) {
+            commands.add(projectConfig.getTestCase().testClassName);
+            commands.add(projectConfig.getTestCase().testMethodName);
+            commands.add(String.valueOf(projectConfig.getTestCase().testCaseType));
+        }
+
+        return commands;
+    }
+
+    protected static String constructJavaTraceAgentParameter(ProjectConfig projectCOnfig) {
+        JavaTracerAgentParameters parameters = new JavaTracerAgentParameters();
+        parameters.update(JavaTracerConfig.getInstance().genParameters());
+        parameters.update(projectCOnfig.genParameters());
+        parameters.update(LogConfig.getInstance().genParameters());
+        return parameters.toString();
+    }
+
+}
