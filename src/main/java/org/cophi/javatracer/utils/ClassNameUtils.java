@@ -6,11 +6,11 @@ public class ClassNameUtils {
 
     }
 
-    public static String canonicalToClassFileName(String canonicalName) {
+    public static String canonicalToClassURIName(String canonicalName) {
         return canonicalName.replace('.', '/');
     }
 
-    public static String classFileNameToCanonicalName(String binaryName) {
+    public static String classURINameToCanonicalName(String binaryName) {
         return binaryName.replace('/', '.');
     }
 

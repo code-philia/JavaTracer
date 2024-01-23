@@ -1,3 +1,4 @@
 Manifest-Version: 1.0
-Premain-Class: org.cophi.javatracer.instrumentation.JavaTracerAgent
+Premain-Class: org.cophi.javatracer.core.Premain
 Main-Class: org.cophi.javatracer.JavaTracer
+Can-Retransform-Classes: true

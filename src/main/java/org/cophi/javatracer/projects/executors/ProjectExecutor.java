@@ -34,11 +34,24 @@ public class ProjectExecutor {
 
         ProcessBuilder processBuilder = new ProcessBuilder(commands);
         processBuilder.directory(Path.of(projectConfig.getProjectRootPath()).toFile());
-        processBuilder.inheritIO();
-        processBuilder.redirectErrorStream(true);
+//        processBuilder.inheritIO();
+//        processBuilder.redirectErrorStream(true);
         try {
             Process process = processBuilder.start();
-//            this.setupInputStream(process);
+            // Handle the output stream
+            BufferedReader outputReader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()));
+            String outputLine;
+            while ((outputLine = outputReader.readLine()) != null) {
+                System.out.println(outputLine);
+            }
+            // Handle the error stream
+            BufferedReader errorReader = new BufferedReader(
+                new InputStreamReader(process.getErrorStream()));
+            String errorLine;
+            while ((errorLine = errorReader.readLine()) != null) {
+                System.err.println(errorLine);
+            }
             process.waitFor();
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);

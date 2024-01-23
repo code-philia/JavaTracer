@@ -9,7 +9,12 @@ import org.cophi.javatracer.log.LogConfig;
 
 public class CommandLineBuilder {
 
+    protected static final String REMOVE_JAVA_FORMAT = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:%s";
+
     public static List<String> buildCommand(final ProjectConfig projectConfig) {
+
+        final JavaTracerConfig javaTracerConfig = JavaTracerConfig.getInstance();
+
         List<String> commands = new ArrayList<>();
 
         final String javaPath = projectConfig.getJavaHome().getExePath();
@@ -19,7 +24,11 @@ public class CommandLineBuilder {
         commands.add("-noverify");
         commands.add("-Duser.dir=" + projectRootPath);
 
-        final String javaTracerJarPath = JavaTracerConfig.getInstance().getJavaTracerJarPath();
+        if (javaTracerConfig.isDebugMode) {
+            commands.add(String.format(REMOVE_JAVA_FORMAT, javaTracerConfig.getDebugPort()));
+        }
+
+        final String javaTracerJarPath = javaTracerConfig.getJavaTracerJarPath();
         commands.add("-javaagent:" + javaTracerJarPath + "="
             + CommandLineBuilder.constructJavaTraceAgentParameter(projectConfig));
 

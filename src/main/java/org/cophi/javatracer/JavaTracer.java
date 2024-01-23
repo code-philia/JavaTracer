@@ -1,6 +1,7 @@
 package org.cophi.javatracer;
 
 import org.cophi.javatracer.configs.JavaHome;
+import org.cophi.javatracer.configs.JavaTracerConfig;
 import org.cophi.javatracer.configs.MavenProjectConfig;
 import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.exceptions.ProjectNotCompilableException;
@@ -31,6 +32,9 @@ public class JavaTracer {
         TestCase testCase = new TestCase("org.apache.commons.lang3.math.FractionTest",
             "testReducedFactory_int_int");
         config.setTestCase(testCase);
+
+        JavaTracerConfig.getInstance().setDebugMode(true);
+        JavaTracerConfig.getInstance().setVariableLayer(100);
 
         LogConfig.getInstance().setLogType(LogType.DEBUG);
         ProjectExecutor executor = new ProjectExecutor(config);

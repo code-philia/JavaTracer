@@ -1,4 +1,4 @@
-package org.cophi.javatracer.core;
+package org.cophi.javatracer.instrumentation.agents;
 
 import org.cophi.javatracer.configs.JavaTracerAgentParameters;
 

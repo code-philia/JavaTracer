@@ -1,7 +1,10 @@
 package org.cophi.javatracer.testcase.runner;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Objects;
+import org.cophi.javatracer.instrumentation.tracer.InstrumentMethods;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.testcase.TestCase;
 import org.cophi.javatracer.testcase.TestCaseType;
@@ -78,5 +81,57 @@ public abstract class AbstractTestCaseRunner implements TestCaseRunner {
      */
     protected void $testStarted(final String className, final String methodName) {
         // For instrumentation agent
+    }
+
+    public enum Methods implements InstrumentMethods {
+        EXIT_PROGRAM("$exitProgram", String.class),
+        TEST_FINISHED("$testFinished", String.class, String.class),
+        TEST_STARTED("$testStarted", String.class, String.class);
+
+        private final String methodName;
+        private final int argumentNumber;
+        private final String descriptor;
+        private final String declareClassName;
+
+        Methods(final String methodName, Class<?>... argumentTypes) {
+            try {
+                final Class<?> clazz = AbstractTestCaseRunner.class;
+                java.lang.reflect.Method method = clazz.getDeclaredMethod(methodName,
+                    argumentTypes);
+                this.declareClassName = method.getDeclaringClass().getName();
+                this.descriptor = java.lang.invoke.MethodType.methodType(method.getReturnType(),
+                    method.getParameterTypes()).toMethodDescriptorString();
+                this.argumentNumber = this.isStatic(method) ? method.getParameterCount()
+                    : method.getParameterCount() + 1;
+                this.methodName = methodName;
+            } catch (NoSuchMethodException e) {
+                Log.fetal(e.getMessage(), this.getClass());
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public int getArgumentNumber() {
+            return this.argumentNumber;
+        }
+
+        @Override
+        public String getDeclareClassName() {
+            return this.declareClassName;
+        }
+
+        @Override
+        public String getDescriptor() {
+            return this.descriptor;
+        }
+
+        @Override
+        public String getMethodName() {
+            return this.methodName;
+        }
+
+        private boolean isStatic(final Method method) {
+            return Modifier.isStatic(method.getModifiers());
+        }
     }
 }

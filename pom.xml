@@ -44,7 +44,7 @@
     <dependency>
       <artifactId>bcel</artifactId>
       <groupId>org.apache.bcel</groupId>
-      <version>6.8.0</version>
+      <version>6.0</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
     <dependency>

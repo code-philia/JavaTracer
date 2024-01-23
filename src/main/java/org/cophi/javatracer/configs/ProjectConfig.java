@@ -5,14 +5,15 @@ import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import org.cophi.javatracer.core.AgentParameters;
 import org.cophi.javatracer.exceptions.ProjectConfigException;
+import org.cophi.javatracer.instrumentation.agents.AgentParameters;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.testcase.TestCase;
 import org.cophi.javatracer.testcase.runner.AbstractTestCaseRunner;
 
 public class ProjectConfig implements AgentParameters {
 
+    public static final String mainDescriptor = "main([Ljava/lang/String;)V";
     public static final String WORKING_DIR_KEY = "working_dir";
     public static final String LAUNCH_CLASS_KEY = "launch_class";
     public static final String JAVA_HOME_KEY = "java_home";
@@ -26,9 +27,8 @@ public class ProjectConfig implements AgentParameters {
     public static final String JAVA_BUILD_TOOL_KEY = "java_build_tool";
     public static final String CLASS_NAME_DELIMITER = ">";
     public static final String CLASS_PATHS_KEY = "class_paths";
-
+    public static final String REQUIRE_METHOD_SPLITTING_KEY = "require_method_splitting";
     protected final static String TEST_CASE_LAUNCH_CLASS = AbstractTestCaseRunner.class.getCanonicalName();
-    protected final static String NULL = "null";
     protected String projectRootPath = null;
     protected JavaHome javaHome = null;
     protected List<String> classPaths = new LinkedList<>();
@@ -40,6 +40,8 @@ public class ProjectConfig implements AgentParameters {
     protected List<String> includedClassNames = new LinkedList<>();
     protected List<String> excludedClassName = new LinkedList<>();
     protected JavaBuildTools javaBuildTools = JavaBuildTools.DEFAULT;
+    protected EntryPoint entryPoint = null;
+    protected boolean requireMethodSplitting = false;
 
     public ProjectConfig() {
     }
@@ -58,9 +60,9 @@ public class ProjectConfig implements AgentParameters {
         parameters.setParameter(ProjectConfig.IS_TEST_CASE_KEY,
             String.valueOf(this.isRunningTestCase));
         parameters.setParameter(ProjectConfig.TEST_CASE_CLASS_NAME_KEY,
-            this.testCase == null ? ProjectConfig.NULL : this.testCase.testClassName);
+            this.testCase == null ? JavaTracerAgentParameters.NULL : this.testCase.testClassName);
         parameters.setParameter(ProjectConfig.TEST_CASE_METHOD_NAME_KEY,
-            this.testCase == null ? ProjectConfig.NULL : this.testCase.testMethodName);
+            this.testCase == null ? JavaTracerAgentParameters.NULL : this.testCase.testMethodName);
         parameters.setParameter(ProjectConfig.WORKING_DIR_KEY, this.projectRootPath);
         parameters.setParameter(ProjectConfig.SOURCE_CODE_PATH_KEY, this.sourceCodePath);
         parameters.setParameter(ProjectConfig.TEST_CODE_PATH_KEY, this.testCodePath);
@@ -75,6 +77,11 @@ public class ProjectConfig implements AgentParameters {
         parameters.setParameter(ProjectConfig.CLASS_PATHS_KEY,
             this.classPaths.isEmpty() ? JavaTracerAgentParameters.NULL :
                 String.join(ProjectConfig.CLASS_NAME_DELIMITER, this.classPaths));
+        parameters.setParameter(ProjectConfig.REQUIRE_METHOD_SPLITTING_KEY,
+            String.valueOf(this.requireMethodSplitting));
+        if (this.entryPoint != null) {
+            parameters.update(this.entryPoint.genParameters());
+        }
         return parameters;
     }
 
@@ -112,6 +119,12 @@ public class ProjectConfig implements AgentParameters {
             this.setClassPaths(List.of(classPathStr.split(
                 ProjectConfig.CLASS_NAME_DELIMITER)));
         }
+
+        this.setRequireMethodSplitting(
+            Boolean.parseBoolean(
+                parameters.getParameter(ProjectConfig.REQUIRE_METHOD_SPLITTING_KEY)));
+
+        this.entryPoint = EntryPoint.parseParameter(parameters);
     }
 
     public List<String> getClassPaths() {
@@ -122,6 +135,14 @@ public class ProjectConfig implements AgentParameters {
         Objects.requireNonNull(classPaths,
             Log.genMessage("The given classPaths is null.", this.getClass()));
         this.classPaths = classPaths;
+    }
+
+    public EntryPoint getEntryPoint() {
+        return this.entryPoint;
+    }
+
+    public void setEntryPoint(final EntryPoint entryPoint) {
+        this.entryPoint = entryPoint;
     }
 
     public List<String> getExcludedClassNames() {
@@ -164,6 +185,7 @@ public class ProjectConfig implements AgentParameters {
                 Log.genMessage("The given launch class is empty.", this.getClass()));
         }
         this.launchClass = launchClass;
+        this.setEntryPoint(new EntryPoint(launchClass));
     }
 
     public String getProjectRootPath() {
@@ -206,6 +228,10 @@ public class ProjectConfig implements AgentParameters {
         return this.isRunningTestCase;
     }
 
+    public boolean requireMethodSplitting() {
+        return this.requireMethodSplitting;
+    }
+
     public void setIsTestCase(final boolean isTestCase) {
         this.isRunningTestCase = isTestCase;
         if (!this.isRunningTestCase) {
@@ -217,6 +243,10 @@ public class ProjectConfig implements AgentParameters {
         Objects.requireNonNull(javaBuildTools,
             Log.genMessage("The given java build tools is null.", this.getClass()));
         this.javaBuildTools = javaBuildTools;
+    }
+
+    public void setRequireMethodSplitting(final boolean requireMethodSplitting) {
+        this.requireMethodSplitting = requireMethodSplitting;
     }
 
     public void updateFrameworkInfo() {

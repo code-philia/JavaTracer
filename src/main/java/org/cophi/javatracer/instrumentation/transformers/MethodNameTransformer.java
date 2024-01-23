@@ -15,7 +15,7 @@ import org.apache.bcel.generic.InstructionFactory;
 import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.cophi.javatracer.configs.ProjectConfig;
-import org.cophi.javatracer.instrumentation.filters.InstrumentationFilter;
+import org.cophi.javatracer.instrumentation.filters.JavaTracerFilter;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.log.LogType;
 import org.cophi.javatracer.utils.ClassNameUtils;
@@ -32,7 +32,7 @@ public class MethodNameTransformer implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String classFileName, Class<?> classBeingRedefined,
         ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         try {
-            InstrumentationFilter filter = InstrumentationFilter.getInstance();
+            JavaTracerFilter filter = JavaTracerFilter.getInstance();
             if (protectionDomain != null) {
                 CodeSource codeSource = protectionDomain.getCodeSource();
                 if ((codeSource == null) || (codeSource.getLocation() == null)) {
@@ -40,14 +40,14 @@ public class MethodNameTransformer implements ClassFileTransformer {
                 }
                 URL srcLocation = codeSource.getLocation();
                 String path = Paths.get(srcLocation.toURI()).toString();
-                if (!filter.pass(classFileName, path)) {
+                if (!filter.isInstrumentableClass(classFileName, path)) {
                     return classfileBuffer;
                 }
                 String targetClassName =
                     this.projectConfig.isRunningTestCase()
                         ? this.projectConfig.getTestCase().testClassName
                         : this.projectConfig.getLaunchClass();
-                targetClassName = ClassNameUtils.canonicalToClassFileName(targetClassName);
+                targetClassName = ClassNameUtils.canonicalToClassURIName(targetClassName);
                 byte[] resultBuffer = classfileBuffer;
                 if (targetClassName.equals(classFileName)) {
                     resultBuffer = this.insertMethodName(classfileBuffer);

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.cophi.javatracer.exceptions.MissingParameterException;
 import org.cophi.javatracer.log.Log;
 
 public class JavaTracerAgentParameters {
@@ -60,7 +61,7 @@ public class JavaTracerAgentParameters {
 
     public String getParameter(String parameter) {
         if (!this.containsParameters(parameter)) {
-            throw new IllegalArgumentException(
+            throw new MissingParameterException(
                 Log.genMessage("Parameter " + parameter + " is not found.",
                     JavaTracerAgentParameters.class));
         }
@@ -103,6 +104,13 @@ public class JavaTracerAgentParameters {
     }
 
     public void update(final JavaTracerAgentParameters parameters) {
+        // No duplicated key is allowed
+        for (String key : this.parameters.keySet()) {
+            if (parameters.containsParameters(key)) {
+                throw new IllegalArgumentException(
+                    "Duplicated key is found: " + key + ".");
+            }
+        }
         this.parameters.putAll(parameters.parameters);
     }
 
