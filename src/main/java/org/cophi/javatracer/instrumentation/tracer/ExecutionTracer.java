@@ -8,7 +8,7 @@ import org.cophi.javatracer.instrumentation.agents.LoadedClassRecord;
 import org.cophi.javatracer.instrumentation.tracer.factories.ExecutionTracerFactory;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.model.Trace;
-import org.cophi.javatracer.utils.ClassNameUtils;
+import org.cophi.javatracer.utils.NamingUtils;
 
 public class ExecutionTracer implements Tracer {
 
@@ -218,7 +218,7 @@ public class ExecutionTracer implements Tracer {
         GET_TRACER("_getTracer", boolean.class, String.class, String.class, int.class, int.class,
             String.class, String.class, Object[].class);
 
-        private final String declareClassName;
+        private final String declareClassBinaryName;
 
         private final String methodName;
 
@@ -230,7 +230,7 @@ public class ExecutionTracer implements Tracer {
             try {
                 final Class<?> clazz = ExecutionTracer.class;
                 Method method = clazz.getDeclaredMethod(methodName, argumentTypes);
-                this.declareClassName = ClassNameUtils.canonicalToClassURIName(
+                this.declareClassBinaryName = NamingUtils.canonicalToClassBinaryName(
                     method.getDeclaringClass().getName());
                 this.descriptor = MethodType.methodType(method.getReturnType(),
                     method.getParameterTypes()).toMethodDescriptorString();
@@ -250,8 +250,8 @@ public class ExecutionTracer implements Tracer {
         }
 
         @Override
-        public String getDeclareClassName() {
-            return declareClassName;
+        public String getDeclareClassBinaryName() {
+            return declareClassBinaryName;
         }
 
         @Override

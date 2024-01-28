@@ -13,7 +13,7 @@ import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.instrumentation.agents.LoadedClassRecord;
 import org.cophi.javatracer.instrumentation.agents.LoadedClassRecord.ClassLoadedType;
 import org.cophi.javatracer.instrumentation.instrumentator.instructionInfo.LineInstructionInfo;
-import org.cophi.javatracer.utils.ClassNameUtils;
+import org.cophi.javatracer.utils.NamingUtils;
 
 /**
  * This class is used to filter out the class that do not need to be instrumented.
@@ -169,7 +169,7 @@ public class JavaTracerFilter {
     }
 
     protected boolean matchExternalIncludes(final String classFileName, boolean match) {
-        final String className = ClassNameUtils.classURINameToCanonicalName(classFileName);
+        final String className = NamingUtils.classBinaryNameToCanonicalName(classFileName);
         if (!match && (this.includedClassesMatcher != null)) {
             match = this.includedClassesMatcher.matches(className);
         }

@@ -4,7 +4,7 @@ public interface InstrumentMethods {
 
     int getArgumentNumber();
 
-    String getDeclareClassName();
+    String getDeclareClassBinaryName();
 
     String getDescriptor();
 

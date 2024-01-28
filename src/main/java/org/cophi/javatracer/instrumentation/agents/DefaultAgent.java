@@ -16,7 +16,7 @@ import org.cophi.javatracer.instrumentation.tracer.factories.ExecutionTracerFact
 import org.cophi.javatracer.instrumentation.transformers.TestRunnerTransformer;
 import org.cophi.javatracer.instrumentation.transformers.TraceTransformer;
 import org.cophi.javatracer.log.Log;
-import org.cophi.javatracer.utils.ClassNameUtils;
+import org.cophi.javatracer.utils.NamingUtils;
 
 public class DefaultAgent extends JavaTracerAgent {
 
@@ -157,13 +157,13 @@ public class DefaultAgent extends JavaTracerAgent {
         private final String methodName;
         private final int argumentNumber;
         private final String descriptor;
-        private final String declareClassName;
+        private final String declareClassBinaryName;
 
         Methods(final String methodName, Class<?>... argumentTypes) {
             try {
                 final Class<?> clazz = DefaultAgent.class;
                 Method method = clazz.getDeclaredMethod(methodName, argumentTypes);
-                this.declareClassName = ClassNameUtils.canonicalToClassURIName(
+                this.declareClassBinaryName = NamingUtils.canonicalToClassBinaryName(
                     method.getDeclaringClass().getName());
                 this.descriptor = MethodType.methodType(method.getReturnType(),
                     method.getParameterTypes()).toMethodDescriptorString();
@@ -183,8 +183,8 @@ public class DefaultAgent extends JavaTracerAgent {
         }
 
         @Override
-        public String getDeclareClassName() {
-            return this.declareClassName;
+        public String getDeclareClassBinaryName() {
+            return this.declareClassBinaryName;
         }
 
         @Override

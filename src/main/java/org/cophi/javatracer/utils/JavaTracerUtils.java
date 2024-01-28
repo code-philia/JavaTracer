@@ -14,17 +14,6 @@ public class JavaTracerUtils {
         return className + "#" + methodName;
     }
 
-    public static String getMethodFullName(final String className, final MethodGen methodGen) {
-        final String signature = methodGen.getSignature();
-        final String methodName = methodGen.getName();
-        return className + "#" + methodName + signature;
-    }
-
-    public static String getMethodFullName(final String className, final String methodName,
-        final String methodSignature) {
-        return className + "#" + methodName + methodSignature;
-    }
-
     public static String encodeArgumentName(final MethodGen methodGen) {
         return JavaTracerUtils.encodeArgumentNames(JavaTracerUtils.getArgumentNames(methodGen));
     }

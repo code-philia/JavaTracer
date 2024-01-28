@@ -8,7 +8,7 @@ import java.security.ProtectionDomain;
 import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.instrumentation.tracer.TracerManager;
 import org.cophi.javatracer.instrumentation.tracer.TracerState;
-import org.cophi.javatracer.utils.ClassNameUtils;
+import org.cophi.javatracer.utils.NamingUtils;
 
 public abstract class AbstractTransformer implements ClassFileTransformer {
 
@@ -17,7 +17,7 @@ public abstract class AbstractTransformer implements ClassFileTransformer {
     public AbstractTransformer(final ProjectConfig projectConfig) {
         this.projectConfig = projectConfig;
     }
-    
+
     @Override
     public final byte[] transform(final ClassLoader loader, final String classURIName,
         final Class<?> classBeingRedefined,
@@ -41,7 +41,7 @@ public abstract class AbstractTransformer implements ClassFileTransformer {
         boolean needToReleaseLock = !manager.lock(threadId);
 
         byte[] data = this.transform_(loader,
-            ClassNameUtils.classURINameToCanonicalName(classURIName), classBeingRedefined,
+            NamingUtils.classBinaryNameToCanonicalName(classURIName), classBeingRedefined,
             protectionDomain,
             classfileBuffer);
 

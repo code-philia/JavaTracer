@@ -116,7 +116,7 @@ public abstract class AbstractTestCaseRunner implements TestCaseRunner {
         }
 
         @Override
-        public String getDeclareClassName() {
+        public String getDeclareClassBinaryName() {
             return this.declareClassName;
         }
 

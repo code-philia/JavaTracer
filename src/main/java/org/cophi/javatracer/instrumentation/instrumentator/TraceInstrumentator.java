@@ -38,8 +38,8 @@ import org.cophi.javatracer.instrumentation.instrumentator.instructionInfo.ReadW
 import org.cophi.javatracer.instrumentation.tracer.Tracer;
 import org.cophi.javatracer.instrumentation.tracer.Tracer.Methods;
 import org.cophi.javatracer.log.Log;
-import org.cophi.javatracer.utils.ClassNameUtils;
 import org.cophi.javatracer.utils.JavaTracerUtils;
+import org.cophi.javatracer.utils.NamingUtils;
 
 public class TraceInstrumentator extends AbstractInstrumentator {
 
@@ -50,7 +50,7 @@ public class TraceInstrumentator extends AbstractInstrumentator {
     protected JavaTracerInstructionFactory factory = null;
     protected LocalVariableGen tracerVar = null;
     protected LocalVariableGen classNameVar = null;
-    protected LocalVariableGen methodSignatureVar = null;
+    protected LocalVariableGen methodIdVar = null;
 
     public TraceInstrumentator(final ProjectConfig projectConfig) {
         super(projectConfig);
@@ -150,16 +150,16 @@ public class TraceInstrumentator extends AbstractInstrumentator {
         FieldInstruction instruction = fieldInstructionInfo.getInstruction();
         if (instruction instanceof PUTFIELD) {
             return this.factory.createInvokeWriteFieldMethod(this.tracerVar, fieldInstructionInfo,
-                this.classNameVar, this.methodSignatureVar);
+                this.classNameVar, this.methodIdVar);
         } else if (instruction instanceof PUTSTATIC) {
             return this.factory.createInvokeWriteStaticFieldMethod(this.tracerVar,
-                fieldInstructionInfo, this.classNameVar, this.methodSignatureVar);
+                fieldInstructionInfo, this.classNameVar, this.methodIdVar);
         } else if (instruction instanceof GETFIELD) {
             return this.factory.createInvokeReadFieldMethod(this.tracerVar, fieldInstructionInfo,
-                this.classNameVar, this.methodSignatureVar);
+                this.classNameVar, this.methodIdVar);
         } else if (instruction instanceof GETSTATIC) {
             return this.factory.createInvokeReadStaticFieldMethod(this.tracerVar,
-                fieldInstructionInfo, this.classNameVar, this.methodSignatureVar);
+                fieldInstructionInfo, this.classNameVar, this.methodIdVar);
         } else {
             return null;
         }
@@ -179,9 +179,9 @@ public class TraceInstrumentator extends AbstractInstrumentator {
         newInstructions.append(this.factory.createAssignStringToVar(className, this.classNameVar));
 
         // Store method signature variable
-        final String methodSignature = JavaTracerUtils.getMethodFullName(className, methodGen);
+        final String methodId = NamingUtils.genMethodId(className, methodGen);
         newInstructions.append(
-            this.factory.createAssignStringToVar(methodSignature, this.methodSignatureVar));
+            this.factory.createAssignStringToVar(methodId, this.methodIdVar));
 
         final int methodStartLineNumber = lineInstructionInfo.stream().mapToInt(
                 LineInstructionInfo::getLineNumber).min()
@@ -195,7 +195,7 @@ public class TraceInstrumentator extends AbstractInstrumentator {
             methodGen, constantPoolGen, newInstructions.getStart(), newInstructions,
             this.nextTemVarName());
         newInstructions.append(this.factory.createInvokeCreateTracerMethod_ExecutionTracer(
-            isInternalClass, this.classNameVar, this.methodSignatureVar, methodStartLineNumber,
+            isInternalClass, this.classNameVar, this.methodIdVar, methodStartLineNumber,
             methodEndLineNumber, encodedMethodArgumentNames, encodedMethodArgumentTypes,
             argumentObjectsVar));
         newInstructions.append(
@@ -212,11 +212,11 @@ public class TraceInstrumentator extends AbstractInstrumentator {
         final boolean isThreadMethod) {
         for (InstructionHandle instructionHandle : lineInstructionInfo.getExitInstructions()) {
             InstructionList newInstructions = this.factory.createInvokeHitMethodEndMethod(
-                this.tracerVar, this.classNameVar, this.methodSignatureVar,
+                this.tracerVar, this.classNameVar, this.methodIdVar,
                 lineInstructionInfo.getLineNumber());
             if (isEntryMethod || isThreadMethod) {
                 newInstructions.append(this.factory.createInvokeExitProgramMethod(
-                    this.tracerVar, this.classNameVar, this.methodSignatureVar));
+                    this.tracerVar, this.classNameVar, this.methodIdVar));
             }
             this.insertInstructionHandle(instructionList, newInstructions, instructionHandle);
             newInstructions.dispose();
@@ -228,12 +228,12 @@ public class TraceInstrumentator extends AbstractInstrumentator {
         InstructionList newList;
         if (lineInstructionInfo.hasExceptionTarget()) {
             newList = this.factory.createInvokeHitExceptionTarget(tracerVar,
-                lineInstructionInfo.getLineNumber(), classNameVar, methodSignatureVar);
+                lineInstructionInfo.getLineNumber(), classNameVar, methodIdVar);
         } else {
             final int readVarCount = lineInstructionInfo.countReadInstructions();
             final int writtenVarCount = lineInstructionInfo.countWrittenInstructions();
             newList = this.factory.createInvokeHitLineMethod(tracerVar,
-                lineInstructionInfo.getLineNumber(), classNameVar, methodSignatureVar,
+                lineInstructionInfo.getLineNumber(), classNameVar, methodIdVar,
                 readVarCount, writtenVarCount, lineInstructionInfo.getInstructionHandles());
         }
         this.insertInstructionHandle(instructionList, newList,
@@ -253,7 +253,7 @@ public class TraceInstrumentator extends AbstractInstrumentator {
 //            LocalVariableGen argObjsVar = this.addTempVar(methodGen,
 //                new ArrayType(Type.OBJECT, 1), instructionHandle);
             InstructionList newInstructions = this.factory.createInvokeHitInvokeMethod(
-                this.tracerVar, instructionHandle, this.classNameVar, this.methodSignatureVar,
+                this.tracerVar, instructionHandle, this.classNameVar, this.methodIdVar,
                 isInternalClass, lineInstructionInfo.getLineNumber(), this.nextTemVarName(),
                 methodGen);
             this.insertInstructionHandle(methodGen.getInstructionList(), newInstructions,
@@ -262,7 +262,7 @@ public class TraceInstrumentator extends AbstractInstrumentator {
 //
             if (isInternalClass) {
                 InstructionList afterInvokeInstructions = this.factory.createInvokeAfterInvokeMethod(
-                    this.tracerVar, instructionHandle, this.classNameVar, this.methodSignatureVar,
+                    this.tracerVar, instructionHandle, this.classNameVar, this.methodIdVar,
                     lineInstructionInfo.getLineNumber());
                 this.appendInstruction(methodGen.getInstructionList(), afterInvokeInstructions,
                     instructionHandle);
@@ -281,19 +281,19 @@ public class TraceInstrumentator extends AbstractInstrumentator {
                 arrayInstructionInfo.getElementType(), arrayInstructionInfo.getInstructionHandle());
             if (arrayInstructionInfo.isStore()) {
                 newInstructions = this.factory.createInvokeWriteArrayElementVarMethod(tracerVar,
-                    arrayInstructionInfo, classNameVar, methodSignatureVar, arrayElementTempVar);
+                    arrayInstructionInfo, classNameVar, methodIdVar, arrayElementTempVar);
             } else {
                 newInstructions = this.factory.createInvokeReadArrayElementVarMethod(tracerVar,
-                    arrayInstructionInfo, classNameVar, methodSignatureVar, arrayElementTempVar);
+                    arrayInstructionInfo, classNameVar, methodIdVar, arrayElementTempVar);
             }
         } else if (readWriteInstructionInfo instanceof LocalVariableInstructionInfo localVarInstructionInfo) {
             if (localVarInstructionInfo.getInstruction() instanceof IINC) {
                 newInstructions = this.factory.createInvokeIINCLocalVarMethod(tracerVar,
-                    localVarInstructionInfo, classNameVar, methodSignatureVar,
+                    localVarInstructionInfo, classNameVar, methodIdVar,
                     methodGen.isStatic());
             } else {
                 newInstructions = this.factory.createInvokeReadWriteLocalVarMethod(tracerVar,
-                    localVarInstructionInfo, classNameVar, methodSignatureVar);
+                    localVarInstructionInfo, classNameVar, methodIdVar);
             }
         }
 
@@ -321,11 +321,11 @@ public class TraceInstrumentator extends AbstractInstrumentator {
             ReturnInstruction instruction = (ReturnInstruction) instructionHandle.getInstruction();
             if (instruction instanceof RETURN) {
                 newInstructions = this.factory.createInvokeHitVoidReturnMethod(this.tracerVar,
-                    this.classNameVar, this.methodSignatureVar,
+                    this.classNameVar, this.methodIdVar,
                     lineInstructionInfo.getLineNumber());
             } else {
                 newInstructions = this.factory.createInvokeHitReturnMethod(this.tracerVar,
-                    this.classNameVar, this.methodSignatureVar, instructionHandle,
+                    this.classNameVar, this.methodIdVar, instructionHandle,
                     lineInstructionInfo.getLineNumber());
             }
             this.insertInstructionHandle(instructionList, newInstructions, instructionHandle);
@@ -352,9 +352,10 @@ public class TraceInstrumentator extends AbstractInstrumentator {
 
     protected MethodGen instrumentMethod(final ClassGen classGen, final Method method,
         final boolean isInternalClass, final boolean isEntryMethod, final boolean isThreadMethod) {
-        final String classURIName = ClassNameUtils.canonicalToClassURIName(classGen.getClassName());
+        final String classBinaryName = NamingUtils.canonicalToClassBinaryName(
+            classGen.getClassName());
         final ConstantPoolGen constantPoolGen = classGen.getConstantPool();
-        final MethodGen methodGen = new MethodGen(method, classURIName, constantPoolGen);
+        final MethodGen methodGen = new MethodGen(method, classBinaryName, constantPoolGen);
         // Fill up the missing variables in localVariableTable
         LocalVariableSupporter.fillUpVariableTable(methodGen, method, constantPoolGen);
 
@@ -367,8 +368,8 @@ public class TraceInstrumentator extends AbstractInstrumentator {
         this.classNameVar = methodGen.addLocalVariable(
             AbstractInstrumentator.CLASS_NAME_VAR_NAME,
             Type.STRING, null, null);
-        this.methodSignatureVar = methodGen.addLocalVariable(
-            AbstractInstrumentator.METHOD_SIGNATURE_VAR_NAME, Type.STRING, null, null);
+        this.methodIdVar = methodGen.addLocalVariable(
+            AbstractInstrumentator.METHOD_ID_VAR_NAME, Type.STRING, null, null);
         this.tracerVar = methodGen.addLocalVariable(TraceInstrumentator.TRACER_VAR_NAME,
             Type.getType(Tracer.class), null, null);
         this.tempVarIdx = 0;

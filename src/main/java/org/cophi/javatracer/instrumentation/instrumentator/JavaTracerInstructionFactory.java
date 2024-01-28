@@ -46,6 +46,7 @@ import org.cophi.javatracer.instrumentation.tracer.ExecutionTracer;
 import org.cophi.javatracer.instrumentation.tracer.Tracer.Methods;
 import org.cophi.javatracer.utils.BasicTypeUtils;
 import org.cophi.javatracer.utils.JavaTracerUtils;
+import org.cophi.javatracer.utils.NamingUtils;
 
 public class JavaTracerInstructionFactory extends InstructionFactory {
 
@@ -145,9 +146,10 @@ public class JavaTracerInstructionFactory extends InstructionFactory {
 
         final String className = insn.getClassName(this.getConstantPool());
         final String methodName = insn.getMethodName(this.getConstantPool());
-        final String sig = insn.getSignature(this.getConstantPool());
-        final String mSig = className + "#" + methodName + sig;
-        newInsns.append(new PUSH(this.getConstantPool(), mSig));
+        // In bcel library, the getSignature here return the method descriptor.
+        final String methodDescriptor = insn.getSignature(this.getConstantPool());
+        final String methodId = NamingUtils.genMethodId(className, methodName, methodDescriptor);
+        newInsns.append(new PUSH(this.getConstantPool(), methodId));
         newInsns.append(new PUSH(this.getConstantPool(), lineNumber));
         newInsns.append(new ALOAD(classNameVar.getIndex()));
         newInsns.append(new ALOAD(methodSigVar.getIndex()));
@@ -173,7 +175,7 @@ public class JavaTracerInstructionFactory extends InstructionFactory {
         instructionList.append(new ALOAD(parameters.getIndex()));
 
         final int idx = constantPoolGen.addMethodref(
-            ExecutionTracer.Methods.GET_TRACER.getDeclareClassName(),
+            ExecutionTracer.Methods.GET_TRACER.getDeclareClassBinaryName(),
             ExecutionTracer.Methods.GET_TRACER.getMethodName(),
             ExecutionTracer.Methods.GET_TRACER.getDescriptor());
         instructionList.append(new INVOKESTATIC(idx));
@@ -184,7 +186,7 @@ public class JavaTracerInstructionFactory extends InstructionFactory {
         final LocalVariableGen classNameVar, final LocalVariableGen methodSigVar) {
         InstructionList newInsns = new InstructionList();
         int index = this.getConstantPool()
-            .addInterfaceMethodref(DefaultAgent.Methods.EXIT_PROGRAM.getDeclareClassName(),
+            .addInterfaceMethodref(DefaultAgent.Methods.EXIT_PROGRAM.getDeclareClassBinaryName(),
                 DefaultAgent.Methods.EXIT_PROGRAM.getMethodName(),
                 DefaultAgent.Methods.EXIT_PROGRAM.getDescriptor());
         newInsns.append(new ALOAD(classNameVar.getIndex()));
@@ -690,7 +692,7 @@ public class JavaTracerInstructionFactory extends InstructionFactory {
     public Instruction createInvokeTracerMethod(final Methods method) {
         // Create a reference to target method in constant pool
         final ConstantPoolGen constantPoolGen = this.getConstantPool();
-        final int idx = constantPoolGen.addInterfaceMethodref(method.getDeclareClassName(),
+        final int idx = constantPoolGen.addInterfaceMethodref(method.getDeclareClassBinaryName(),
             method.getMethodName(), method.getDescriptor());
 
         // Invoke the method by the reference

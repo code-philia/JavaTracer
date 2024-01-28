@@ -29,7 +29,7 @@ import org.cophi.javatracer.utils.BasicTypeUtils;
 public abstract class AbstractInstrumentator implements JavaTracerInstrumentator {
 
     protected static final String CLASS_NAME_VAR_NAME = "$className";
-    protected static final String METHOD_SIGNATURE_VAR_NAME = "$methodSignature";
+    protected static final String METHOD_ID_VAR_NAME = "$methodId";
 
     protected ProjectConfig projectConfig;
 

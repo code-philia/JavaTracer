@@ -4,7 +4,7 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import org.cophi.javatracer.log.Log;
-import org.cophi.javatracer.utils.ClassNameUtils;
+import org.cophi.javatracer.utils.NamingUtils;
 
 public interface Tracer {
 
@@ -108,14 +108,14 @@ public interface Tracer {
         private final String methodName;
         private final int argumentNumber;
         private final String descriptor;
-        private final String declareClassName;
+        private final String declareClassBinaryName;
 
 
         Methods(final String methodName, Class<?>... argumentTypes) {
             try {
                 final Class<?> clazz = Tracer.class;
                 Method method = clazz.getDeclaredMethod(methodName, argumentTypes);
-                this.declareClassName = ClassNameUtils.canonicalToClassURIName(
+                this.declareClassBinaryName = NamingUtils.canonicalToClassBinaryName(
                     method.getDeclaringClass().getName());
                 this.descriptor = MethodType.methodType(method.getReturnType(),
                     method.getParameterTypes()).toMethodDescriptorString();
@@ -134,8 +134,8 @@ public interface Tracer {
         }
 
         @Override
-        public String getDeclareClassName() {
-            return declareClassName;
+        public String getDeclareClassBinaryName() {
+            return declareClassBinaryName;
         }
 
         @Override

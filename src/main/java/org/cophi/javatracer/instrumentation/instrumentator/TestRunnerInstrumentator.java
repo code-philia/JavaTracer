@@ -19,7 +19,7 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 import org.cophi.javatracer.instrumentation.agents.DefaultAgent;
 import org.cophi.javatracer.testcase.runner.AbstractTestCaseRunner.Methods;
-import org.cophi.javatracer.utils.ClassNameUtils;
+import org.cophi.javatracer.utils.NamingUtils;
 
 public class TestRunnerInstrumentator implements JavaTracerInstrumentator {
 
@@ -34,7 +34,7 @@ public class TestRunnerInstrumentator implements JavaTracerInstrumentator {
 
         for (Method method : javaClass.getMethods()) {
             final MethodGen methodGen = new MethodGen(method,
-                ClassNameUtils.canonicalToClassURIName(className), constantPoolGen);
+                NamingUtils.canonicalToClassBinaryName(className), constantPoolGen);
             if (Methods.EXIT_PROGRAM.getMethodName().equals(method.getName())) {
                 this.injectMethodCall(methodGen, classGen, DefaultAgent.Methods.EXIT_PROGRAM);
             } else if (Methods.TEST_FINISHED.getMethodName().equals(method.getName())) {
@@ -54,7 +54,7 @@ public class TestRunnerInstrumentator implements JavaTracerInstrumentator {
 
         // Create method reference
         final int methodIdx = classGen.getConstantPool().addMethodref(
-            ClassNameUtils.canonicalToClassURIName(invokeMethod.getDeclareClassName()),
+            NamingUtils.canonicalToClassBinaryName(invokeMethod.getDeclareClassBinaryName()),
             invokeMethod.getMethodName(), invokeMethod.getDescriptor());
         InstructionList newInstructions = new InstructionList();
         LocalVariableTable localVariableTable = methodGen.getLocalVariableTable(classGen
