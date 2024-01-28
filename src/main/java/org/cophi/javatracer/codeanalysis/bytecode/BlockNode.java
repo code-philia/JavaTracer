@@ -1,4 +1,4 @@
-package org.cophi.javatracer.cfg;
+package org.cophi.javatracer.codeanalysis.bytecode;
 
 import java.util.ArrayList;
 import java.util.List;

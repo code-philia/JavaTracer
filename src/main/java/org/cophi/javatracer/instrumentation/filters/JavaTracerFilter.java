@@ -67,7 +67,7 @@ public class JavaTracerFilter {
 
     public void initialize(final ProjectConfig projectConfig) {
         final Path projectRootDir = Paths.get(projectConfig.getProjectRootPath());
-        for (String classPathStr : projectConfig.getClassPaths()) {
+        for (String classPathStr : projectConfig.getClasspaths()) {
             Path classPath = Paths.get(classPathStr);
             if (classPath.startsWith(projectRootDir)) {
                 File binFolder = classPath.toFile();

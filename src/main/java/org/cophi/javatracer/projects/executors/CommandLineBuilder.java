@@ -33,7 +33,7 @@ public class CommandLineBuilder {
             + CommandLineBuilder.constructJavaTraceAgentParameter(projectConfig));
 
         commands.add("-cp");
-        commands.add(String.join(";", projectConfig.getClassPaths()));
+        commands.add(String.join(";", projectConfig.getClasspaths()));
         commands.add(projectConfig.getLaunchClass());
 
         if (projectConfig.isRunningTestCase()) {

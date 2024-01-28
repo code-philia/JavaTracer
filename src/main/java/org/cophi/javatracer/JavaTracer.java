@@ -8,7 +8,7 @@ import org.cophi.javatracer.exceptions.ProjectNotCompilableException;
 import org.cophi.javatracer.log.Log;
 import org.cophi.javatracer.log.LogConfig;
 import org.cophi.javatracer.log.LogType;
-import org.cophi.javatracer.model.Trace;
+import org.cophi.javatracer.model.trace.Trace;
 import org.cophi.javatracer.projects.executors.ProjectExecutor;
 import org.cophi.javatracer.testcase.TestCase;
 

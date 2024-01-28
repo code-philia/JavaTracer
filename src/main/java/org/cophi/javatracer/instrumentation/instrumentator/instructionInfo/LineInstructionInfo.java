@@ -18,9 +18,9 @@ import org.apache.bcel.generic.InvokeInstruction;
 import org.apache.bcel.generic.LineNumberGen;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
-import org.cophi.javatracer.cfg.CFG;
-import org.cophi.javatracer.cfg.CFGConstructor;
-import org.cophi.javatracer.cfg.CFGNode;
+import org.cophi.javatracer.codeanalysis.bytecode.CFG;
+import org.cophi.javatracer.codeanalysis.bytecode.CFGConstructor;
+import org.cophi.javatracer.codeanalysis.bytecode.CFGNode;
 import org.cophi.javatracer.instrumentation.agents.LoadedClassRecord;
 import org.cophi.javatracer.utils.StringUtils;
 

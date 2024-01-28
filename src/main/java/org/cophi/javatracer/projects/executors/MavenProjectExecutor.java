@@ -18,7 +18,7 @@ public class MavenProjectExecutor {
     public MavenProjectExecutor(final MavenProjectConfig mavenProjectConfig) {
         this.mavenProjectConfig = mavenProjectConfig;
     }
-    
+
     public void executeProject() throws ProjectNotCompilableException {
         final String projectRootPath = this.mavenProjectConfig.getProjectRootPath();
         final String mavenHome = this.mavenProjectConfig.getMavenHome();
@@ -32,7 +32,7 @@ public class MavenProjectExecutor {
         commands.add(
             "-javaagent:" + JavaTracerConfig.getInstance().getJavaTracerJarPath());
         commands.add("-cp");
-        commands.add(String.join(";", this.mavenProjectConfig.getClassPaths()));
+        commands.add(String.join(";", this.mavenProjectConfig.getClasspaths()));
         commands.add(this.mavenProjectConfig.getLaunchClass());
 
         if (this.mavenProjectConfig.isRunningTestCase()) {

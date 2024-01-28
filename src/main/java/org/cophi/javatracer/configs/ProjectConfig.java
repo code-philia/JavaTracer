@@ -2,6 +2,7 @@ package org.cophi.javatracer.configs;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -42,6 +43,7 @@ public class ProjectConfig implements AgentParameters {
     protected JavaBuildTools javaBuildTools = JavaBuildTools.DEFAULT;
     protected EntryPoint entryPoint = null;
     protected boolean requireMethodSplitting = false;
+    protected ClassLoader classLoader;
 
     public ProjectConfig() {
     }
@@ -127,14 +129,23 @@ public class ProjectConfig implements AgentParameters {
         this.entryPoint = EntryPoint.parseParameter(parameters);
     }
 
-    public List<String> getClassPaths() {
-        return classPaths;
+    public List<String> getAllSourceFolder() {
+        List<String> candidateSourceFolder = new ArrayList<>();
+        candidateSourceFolder.add(this.getSourceCodePath());
+        candidateSourceFolder.add(this.getTestCodePath());
+        return candidateSourceFolder;
     }
 
-    public void setClassPaths(List<String> classPaths) {
-        Objects.requireNonNull(classPaths,
-            Log.genMessage("The given classPaths is null.", this.getClass()));
-        this.classPaths = classPaths;
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    public List<String> getClasspaths() {
+        return classPaths;
     }
 
     public EntryPoint getEntryPoint() {
@@ -230,6 +241,12 @@ public class ProjectConfig implements AgentParameters {
 
     public boolean requireMethodSplitting() {
         return this.requireMethodSplitting;
+    }
+
+    public void setClassPaths(List<String> classPaths) {
+        Objects.requireNonNull(classPaths,
+            Log.genMessage("The given classPaths is null.", this.getClass()));
+        this.classPaths = classPaths;
     }
 
     public void setIsTestCase(final boolean isTestCase) {

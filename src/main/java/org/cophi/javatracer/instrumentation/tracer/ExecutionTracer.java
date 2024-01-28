@@ -7,7 +7,7 @@ import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.instrumentation.agents.LoadedClassRecord;
 import org.cophi.javatracer.instrumentation.tracer.factories.ExecutionTracerFactory;
 import org.cophi.javatracer.log.Log;
-import org.cophi.javatracer.model.Trace;
+import org.cophi.javatracer.model.trace.Trace;
 import org.cophi.javatracer.utils.NamingUtils;
 
 public class ExecutionTracer implements Tracer {
@@ -18,7 +18,7 @@ public class ExecutionTracer implements Tracer {
 
     protected final ProjectConfig projectConfig;
 
-    Trace trace = new Trace();
+    Trace trace;
 
 
     public ExecutionTracer(final long threadId, final String threadName,
@@ -27,6 +27,7 @@ public class ExecutionTracer implements Tracer {
         this.threadName = threadName;
         this.managerDelegate = new ManagerDelegate(threadId);
         this.projectConfig = projectConfig;
+        this.trace = new Trace(this.projectConfig);
     }
 
     public synchronized static Tracer _getTracer(boolean isInternalClass, String className,

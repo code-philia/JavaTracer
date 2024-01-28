@@ -100,5 +100,30 @@ public class NamingUtils {
         return NamingUtils.genMethodId(className, methodGen.getName(), methodGen.getSignature());
     }
 
+    /**
+     * Generate method id with the format {@code {className}#{methodSignature}}. <br/> For example,
+     * {@code org.example.Foo#bar()V}
+     *
+     * @param className       Canonical class name
+     * @param methodSignature Method signature
+     * @return Method id
+     */
+    public static String genMethodId(final String className, final String methodSignature) {
+        return className + NAME_SEPARATOR + methodSignature;
+    }
+
+    public static String getCompilationUnit(final String className) {
+        // The case which this function is missing to handle: Non-public top level class
+        if (className.contains("$")) {
+            return className.substring(0, className.indexOf("$"));
+        } else {
+            return className;
+        }
+    }
+
+    public static String extractPackageName(final String className) {
+        return className.substring(0, className.lastIndexOf("."));
+    }
+
 
 }
