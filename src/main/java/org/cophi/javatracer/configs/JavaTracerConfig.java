@@ -15,6 +15,7 @@ public class JavaTracerConfig implements AgentParameters {
     public static final boolean DEFAULT_APPLY_LIBRARY_OPTIMIZATION = false;
     public static final AgentType DEFAULT_AGENT_TYPE = AgentType.DEFAULT_AGENT;
     public static final long DEFAULT_MAX_METHOD_INSTRUCTION_OFFSET = 65534;
+    public static final boolean DEFAULT_AVOID_PROXY_TO_STRING = false;
     public static final String DEFAULT_DATASET_FOLDER = "C:\\Users\\WYK\\Desktop\\neo4j-dataset";
     public static final String DEBUG_MODE_KEY = "debug_mode";
     public static final String LOG_TYPE_KEY = "log_type";
@@ -27,6 +28,7 @@ public class JavaTracerConfig implements AgentParameters {
     public static final String MAX_METHOD_INSTRUCTION_OFFSET_KEY = "max_method_instruction_offset";
     public static final String DATASET_FOLDER_KEY = "dataset_folder";
     public static final String DISTRIBUTION_LAYER_KEY = "distribution_layer";
+    public static final String AVOID_PROXY_TO_STRING_KEY = "avoid_proxy_to_string";
 
     public boolean isDebugMode = JavaTracerConfig.DEFAULT_IS_DEBUG_MODE;
     public boolean applyLibraryOptimization = JavaTracerConfig.DEFAULT_APPLY_LIBRARY_OPTIMIZATION;
@@ -38,6 +40,7 @@ public class JavaTracerConfig implements AgentParameters {
     protected String javaTracerJarPath = JavaTracerConfig.detectJavaTracerJarPath();
     protected long maxMethodInstructionOffset = JavaTracerConfig.DEFAULT_MAX_METHOD_INSTRUCTION_OFFSET;
     protected AgentType agentType = JavaTracerConfig.DEFAULT_AGENT_TYPE;
+    protected boolean avoidProxyToString = JavaTracerConfig.DEFAULT_AVOID_PROXY_TO_STRING;
 
     private JavaTracerConfig() {
     }
@@ -70,6 +73,8 @@ public class JavaTracerConfig implements AgentParameters {
         parameters.setParameter(JavaTracerConfig.DATASET_FOLDER_KEY, this.datasetFolder);
         parameters.setParameter(JavaTracerConfig.DISTRIBUTION_LAYER_KEY,
             String.valueOf(this.distributionLayer));
+        parameters.setParameter(JavaTracerConfig.AVOID_PROXY_TO_STRING_KEY, String.valueOf(
+            this.avoidProxyToString));
         return parameters;
     }
 
@@ -92,6 +97,8 @@ public class JavaTracerConfig implements AgentParameters {
         this.setDatasetFolder(parameters.getParameter(JavaTracerConfig.DATASET_FOLDER_KEY));
         this.setDistributionLayer(
             Integer.parseInt(parameters.getParameter(JavaTracerConfig.DISTRIBUTION_LAYER_KEY)));
+        this.setAvoidProxyToString(Boolean.parseBoolean(
+            parameters.getParameter(JavaTracerConfig.AVOID_PROXY_TO_STRING_KEY)));
     }
 
     public AgentType getAgentType() {
@@ -164,6 +171,14 @@ public class JavaTracerConfig implements AgentParameters {
 
     public void setApplyLibraryOptimization(boolean applyLibraryOptimization) {
         this.applyLibraryOptimization = applyLibraryOptimization;
+    }
+
+    public boolean isAvoidProxyToString() {
+        return avoidProxyToString;
+    }
+
+    public void setAvoidProxyToString(boolean avoidProxyToString) {
+        this.avoidProxyToString = avoidProxyToString;
     }
 
     public boolean isDebugMode() {

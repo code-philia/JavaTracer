@@ -347,7 +347,7 @@ public class JavaTracerInstructionFactory extends InstructionFactory {
         instructionList.append(new PUSH(constantPoolGen, readVarCount));
         instructionList.append(new PUSH(constantPoolGen, writtenVarCount));
         StringBuilder sb = new StringBuilder();
-        for (InstructionHandle instructionHandle : instructionList) {
+        for (InstructionHandle instructionHandle : byteCodeList) {
             sb.append(instructionHandle.getInstruction().toString()).append(":");
         }
         instructionList.append(new PUSH(constantPoolGen, sb.toString()));

@@ -22,6 +22,8 @@ public class CommandLineBuilder {
 
         final String projectRootPath = projectConfig.getProjectRootPath();
         commands.add("-noverify");
+        commands.add("-Xmx30g");
+        commands.add("-XX:+UseG1GC");
         commands.add("-Duser.dir=" + projectRootPath);
 
         if (javaTracerConfig.isDebugMode) {

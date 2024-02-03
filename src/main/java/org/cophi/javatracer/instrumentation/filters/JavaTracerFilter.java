@@ -111,6 +111,7 @@ public class JavaTracerFilter {
      * @see ProjectConfig#getIncludedClassNames
      */
     public boolean isInstrumentableClass(final String className, final String sourcePath) {
+
         if (JDKFilter.contains(className)) {
             this.updateRecord(className, ClassLoadedType.EXTERNAL, false);
             return false;

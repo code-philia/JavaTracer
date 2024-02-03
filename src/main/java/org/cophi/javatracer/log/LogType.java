@@ -5,6 +5,11 @@ package org.cophi.javatracer.log;
  */
 public enum LogType {
     /**
+     * Flow log type indicate the running procedure. Be careful because there may be lots of
+     * messages.
+     */
+    FLOW,
+    /**
      * Fetal log type indicate severer error events that lead the application to abort.
      */
     FETAL,
@@ -48,7 +53,8 @@ public enum LogType {
             case WARN -> 3;
             case ERROR -> 4;
             case FETAL -> 5;
-            case OFF -> 6;
+            case FLOW -> 6;
+            case OFF -> 7;
         };
     }
 }

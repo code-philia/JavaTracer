@@ -175,7 +175,8 @@ public class TraceInstrumentator extends AbstractInstrumentator {
         }
 
         // Store className variable
-        final String className = methodGen.getClassName();
+        final String className = NamingUtils.classBinaryNameToCanonicalName(
+            methodGen.getClassName());
         newInstructions.append(this.factory.createAssignStringToVar(className, this.classNameVar));
 
         // Store method signature variable
@@ -237,7 +238,7 @@ public class TraceInstrumentator extends AbstractInstrumentator {
                 readVarCount, writtenVarCount, lineInstructionInfo.getInstructionHandles());
         }
         this.insertInstructionHandle(instructionList, newList,
-            lineInstructionInfo.getFirstInstruction());
+            lineInstructionInfo.getLineInstructionHandle());
         newList.dispose();
     }
 

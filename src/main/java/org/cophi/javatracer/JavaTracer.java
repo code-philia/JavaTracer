@@ -34,7 +34,6 @@ public class JavaTracer {
         config.setTestCase(testCase);
 
         JavaTracerConfig.getInstance().setDebugMode(true);
-        JavaTracerConfig.getInstance().setVariableLayer(100);
 
         LogConfig.getInstance().setLogType(LogType.DEBUG);
         ProjectExecutor executor = new ProjectExecutor(config);

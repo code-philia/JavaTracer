@@ -6,34 +6,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import org.cophi.javatracer.codeanalysis.ast.LocalVariableScopes;
 import org.cophi.javatracer.configs.ProjectConfig;
 import org.cophi.javatracer.model.location.BreakPoint;
 import org.cophi.javatracer.model.scope.Scope;
 import org.cophi.javatracer.model.variables.AttributionVar;
+import org.cophi.javatracer.model.variables.LocalVar;
 import org.cophi.javatracer.model.variables.VarValue;
 import org.cophi.javatracer.model.variables.Variable;
 import org.cophi.javatracer.model.variables.VirtualValue;
 import org.cophi.javatracer.utils.Settings;
-//import org.eclipse.jdt.core.dom.ASTVisitor;
-//import org.eclipse.jdt.core.dom.CatchClause;
-//import org.eclipse.jdt.core.dom.CompilationUnit;
+
 
 public class Trace {
 
+    protected static final String ID_PREFIX = "trace_";
+    private final String threadName;
+    private final long threadId;
     private int observingIndex = -1;
     private ProjectConfig projectConfig;
     private List<String> includedLibraryClasses = new ArrayList<>();
     private List<String> excludedLibraryClasses = new ArrayList<>();
     private boolean isMain;
-    private String threadName;
-    private String id;
-
-    /**
-     * This variable is to trace whether the variables in different lines are the same local
-     * variable.
-     */
-    private LocalVariableScopes localVariableScopes = new LocalVariableScopes();
+    private String traceId;
     /**
      * This variable indicate the time of user ask for recommendation, in addition, the check time
      * is also used to specify the time of a variable marked as "incorrect". Note that, newer
@@ -42,29 +36,29 @@ public class Trace {
     private int checkTime = 1;
     private List<TraceNode> executionList = new ArrayList<>();
     /**
-     * tracking which steps read/write what variables, and what variables are read/written by which
-     * steps. key is the variable ID, and value is the entry containing all the steps
-     * reading/writing the corresponding variable.
-     */
-    @Deprecated
-    private Map<String, StepVariableRelationEntry> stepVariableTable = new HashMap<>();
-    /**
      * the time used to construct the trace, which is used for evaluation.
      */
     private int constructTime = 0;
-    private long threadId;
 //    private Map<String, CatchClause> catchClauseMap = new HashMap<>();
+    private VariableDefinitions variableDefs = new VariableDefinitions();
 
     public Trace(ProjectConfig projectConfig) {
+        Thread thread = Thread.currentThread();
         this.setProjectConfig(projectConfig);
+        this.threadName = thread.getName();
+        this.threadId = thread.getId();
+        this.traceId = this.genTraceId(this.threadName, this.threadId);
     }
 
-    public Trace(String id) {
-        this.id = id;
+    public Trace(final ProjectConfig projectConfig, final long threadId, final String threadName) {
+        this.setProjectConfig(projectConfig);
+        this.threadId = threadId;
+        this.threadName = threadName;
+        this.traceId = this.genTraceId(this.threadName, this.threadId);
     }
 
     public static String combineTraceNodeExpression(String className, int lineNumber) {
-        className = className.substring(className.lastIndexOf(".") + 1, className.length());
+        className = className.substring(className.lastIndexOf(".") + 1);
 
         String exp = className + " line:" + lineNumber;
         return exp;
@@ -211,6 +205,67 @@ public class Trace {
 //			definingOrder = String.valueOf(order);
 
             definingOrder = null;
+        }
+
+        return definingOrder;
+    }
+
+    /**
+     * if we are finding defining step of a read variable, v, the defining step is the latest step
+     * defining v.
+     * <p>
+     * if we are finding defining step of a written variable: (1) if it is not a field/index of an
+     * object/array, the defining step is the latest step. (2) if it is a sub-value, sv, let the
+     * latest step be s1, the defining step of the sub-value sv is (2-1) s1 if the variable id of sv
+     * is never defined before (2-2) s2, s2 is the latest step defining sv.
+     * <p>
+     * firstOrLast indicates that, when there are multiple defining steps for a variable, whether we
+     * use the first one or the last one. The default is using last one.
+     */
+    public String findDefiningNodeOrder(String accessType, TraceNode currentNode,
+        Variable var, int defStepSelection) {
+        String varID = var.getVarID();
+        String aliasVarID = var.getAliasVarID();
+        varID = Variable.truncateSimpleID(varID);
+        aliasVarID = Variable.truncateSimpleID(aliasVarID);
+        String definingOrder = "0";
+        if (accessType.equals(Variable.WRITTEN)) {
+            definingOrder = String.valueOf(currentNode.getOrder());
+            variableDefs.put(varID, currentNode);
+            if (aliasVarID != null) {
+                variableDefs.put(aliasVarID, currentNode);
+            }
+        } else if (accessType.equals(Variable.READ)) {
+            TraceNode node1 = variableDefs.get(varID, currentNode, defStepSelection);
+            TraceNode node2 = variableDefs.get(aliasVarID, currentNode, defStepSelection);
+
+            int order = 0;
+            if (var instanceof LocalVar) {
+                if (node1 != null && node2 == null) {
+                    order = node1.getOrder();
+                } else if (node1 == null && node2 != null) {
+                    order = node2.getOrder();
+                } else if (node1 != null && node2 != null) {
+                    if (node2.getInvocationParent() == null
+                        && currentNode.getInvocationParent() == null) {
+                        order = (node1.getOrder() > node2.getOrder()) ? node1.getOrder()
+                            : node2.getOrder();
+                    } else if (node2.getInvocationParent() != null
+                        && currentNode.getInvocationParent() != null
+                        && node2.getInvocationParent().equals(currentNode.getInvocationParent())) {
+                        order = (node1.getOrder() > node2.getOrder()) ? node1.getOrder()
+                            : node2.getOrder();
+                    } else {
+                        order = node1.getOrder();
+                    }
+                }
+            } else {
+                if (node1 != null) {
+                    order = node1.getOrder();
+                }
+            }
+
+            definingOrder = String.valueOf(order);
         }
 
         return definingOrder;
@@ -446,10 +501,6 @@ public class Trace {
         this.executionList = exectionList;
     }
 
-    public String getId() {
-        return this.id;
-    }
-
     public List<String> getIncludedLibraryClasses() {
         return includedLibraryClasses;
     }
@@ -476,12 +527,12 @@ public class Trace {
         return null;
     }
 
-    public LocalVariableScopes getLocalVariableScopes() {
-        return localVariableScopes;
+    public int getObservingIndex() {
+        return observingIndex;
     }
 
-    public void setLocalVariableScopes(LocalVariableScopes localVariableScopes) {
-        this.localVariableScopes = localVariableScopes;
+    public void setObservingIndex(int observingIndex) {
+        this.observingIndex = observingIndex;
     }
 
 //	@Deprecated
@@ -559,27 +610,14 @@ public class Trace {
 //
 //	}
 
-    public int getObservingIndex() {
-        return observingIndex;
-    }
-
-//	private Map<String, TraceNode> latestNodeDefiningVariableMap = new HashMap<>();
-
-    public void setObservingIndex(int observingIndex) {
-        this.observingIndex = observingIndex;
-    }
-
     public ProjectConfig getProjectConfig() {
         return projectConfig;
     }
 
+//	private Map<String, TraceNode> latestNodeDefiningVariableMap = new HashMap<>();
+
     public void setProjectConfig(ProjectConfig projectConfig) {
         this.projectConfig = projectConfig;
-    }
-
-    @Deprecated
-    public Map<String, StepVariableRelationEntry> getStepVariableTable() {
-        return stepVariableTable;
     }
 
     /**
@@ -589,15 +627,19 @@ public class Trace {
         return threadId;
     }
 
-    /**
-     * @param threadId the threadId to set
-     */
-    public void setThreadId(long threadId) {
-        this.threadId = threadId;
-    }
-
     public String getThreadName() {
         return threadName;
+    }
+
+    public List<TraceNode> getTopAbstractionLevelNodes() {
+        List<TraceNode> topList = new ArrayList<>();
+        for (TraceNode node : this.executionList) {
+            if (node.getAbstractionParent() == null) {
+                topList.add(node);
+            }
+        }
+
+        return topList;
     }
 
 //	public TraceNode findSuspiciousControlDominator(TraceNode buggyNode, String feedback) {
@@ -623,21 +665,6 @@ public class Trace {
 //		}
 //	}
 
-    public void setThreadName(String threadName) {
-        this.threadName = threadName;
-    }
-
-    public List<TraceNode> getTopAbstractionLevelNodes() {
-        List<TraceNode> topList = new ArrayList<>();
-        for (TraceNode node : this.executionList) {
-            if (node.getAbstractionParent() == null) {
-                topList.add(node);
-            }
-        }
-
-        return topList;
-    }
-
     public List<TraceNode> getTopLoopLevelNodes() {
         List<TraceNode> topList = new ArrayList<>();
         for (TraceNode node : this.executionList) {
@@ -658,6 +685,10 @@ public class Trace {
         }
 
         return topList;
+    }
+
+    public String getTraceId() {
+        return this.traceId;
     }
 
     public TraceNode getTraceNode(int order) {
@@ -723,6 +754,10 @@ public class Trace {
 
     public int size() {
         return this.executionList.size();
+    }
+
+    protected String genTraceId(final String threadName, final long threadId) {
+        return ID_PREFIX + threadName + "_" + threadId;
     }
 
     private void addTryCatchControlFlow(TraceNode node) {
@@ -866,22 +901,6 @@ public class Trace {
         return null;
     }
 
-//    private boolean isClauseContainScope(TraceNode node, CompilationUnit cu, CatchClause clause,
-//        TraceNode existingControlDom) {
-//        if (node.getDeclaringCompilationUnitName()
-//            .equals(existingControlDom.getDeclaringCompilationUnitName())) {
-//            int startLine = cu.getLineNumber(clause.getStartPosition());
-//            int endLine = cu.getLineNumber(clause.getStartPosition() + clause.getLength());
-//
-//            if (startLine <= existingControlDom.getLineNumber()
-//                && existingControlDom.getLineNumber() <= endLine) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
-
     /**
      * I will consider the invocation parents of {@code node} as well
      *
@@ -997,59 +1016,4 @@ public class Trace {
 
         return resultIndex;
     }
-
-//    private void testAndAppendTryCatchControlFlow(TraceNode node) {
-//        String key = node.getDeclaringCompilationUnitName() + ":" + node.getLineNumber();
-//        CatchClause clause = catchClauseMap.get(key);
-//        CompilationUnit cu = JavaUtil.findCompilationUnitInProject(
-//            node.getDeclaringCompilationUnitName(), this.projectConfig);
-//        if (clause == null) {
-//            if (cu == null) {
-//                cu = JavaUtil.findCompiltionUnitBySourcePath(
-//                    node.getBreakPoint().getSourceCodePath(),
-//                    node.getDeclaringCompilationUnitName());
-//            }
-//
-//            CatchClauseFinder finder = new CatchClauseFinder(cu, node.getLineNumber());
-//            cu.accept(finder);
-//            catchClauseMap.put(key, finder.containingClause);
-//        }
-//
-//        if (clause != null) {
-//            TraceNode existingControlDom = node.getControlDominator();
-//            if (existingControlDom != null) {
-//                if (!isClauseContainScope(node, cu, clause, existingControlDom)) {
-//                    addTryCatchControlFlow(node);
-//                }
-//            } else {
-//                addTryCatchControlFlow(node);
-//            }
-//
-//        }
-//    }
-
-//    class CatchClauseFinder extends ASTVisitor {
-//
-//        CompilationUnit cu;
-//        int lineNumber;
-//        CatchClause containingClause;
-//
-//        public CatchClauseFinder(CompilationUnit cu, int lineNumber) {
-//            super();
-//            this.cu = cu;
-//            this.lineNumber = lineNumber;
-//        }
-//
-//        public boolean visit(CatchClause clause) {
-//            int startLine = cu.getLineNumber(clause.getStartPosition());
-//            int endLine = cu.getLineNumber(clause.getStartPosition() + clause.getLength());
-//
-//            if (startLine <= lineNumber && lineNumber <= endLine) {
-//                containingClause = clause;
-//                return true;
-//            } else {
-//                return false;
-//            }
-//        }
-//    }
 }

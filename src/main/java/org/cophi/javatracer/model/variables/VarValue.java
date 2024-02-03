@@ -54,6 +54,14 @@ public abstract class VarValue implements GraphNode, Serializable {
         }
     }
 
+    public void ensureChildrenSize(int size) {
+        if (children == null) {
+            children = new ArrayList<>(size);
+        } else {
+            ((ArrayList<?>) children).ensureCapacity(size);
+        }
+    }
+
     public VarValue findVarValue(String varID) {
         Set<String> visitedIDs = new HashSet<>();
         VarValue value = findVarValue(varID, visitedIDs);

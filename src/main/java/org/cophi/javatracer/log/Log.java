@@ -94,7 +94,7 @@ public class Log {
      * @return {@code True} if the given log type should be logged, {@code False} otherwise
      */
     protected static boolean shouldLog(final LogType logType) {
-        return logType.toLevel() >= Log.currentLogType.toLevel();
+        return logType.toLevel() <= Log.currentLogType.toLevel();
     }
 
     protected static void log(final String message) {
@@ -279,5 +279,41 @@ public class Log {
         if (Log.shouldLog(LogType.FETAL)) {
             Log.log(Log.genMessage(message, LogType.FETAL));
         }
+    }
+
+    /**
+     * Log the given message with flow level.<br/> Note that it will check the JavaTracerConfig for
+     * current logging lever.
+     *
+     * @param message the message to be logged
+     */
+    public static void flow(final String message) {
+        if (Log.shouldLog(LogType.FLOW)) {
+            Log.log(Log.genMessage(message, LogType.FLOW));
+        }
+    }
+
+    /**
+     * Log the given message with flow level.<br/> Note that it will check the JavaTracerConfig for
+     * current logging lever.
+     *
+     * @param message   the message to be logged
+     * @param className the name of the class that the log is generated from
+     */
+    public static void flow(final String message, final String className) {
+        if (Log.shouldLog(LogType.FLOW)) {
+            Log.log(Log.genMessage(message, className, LogType.FLOW));
+        }
+    }
+
+    /**
+     * Log the given message with flow level.<br/> Note that it will check the JavaTracerConfig for
+     * current logging lever.
+     *
+     * @param message the message to be logged
+     * @param clazz   the class that the log is generated from
+     */
+    public static void flow(final String message, final Class<?> clazz) {
+        Log.flow(message, clazz.getName());
     }
 }

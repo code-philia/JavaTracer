@@ -2,6 +2,7 @@ package org.cophi.javatracer.instrumentation.instrumentator.instructionInfo;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.apache.bcel.classfile.LineNumberTable;
@@ -59,6 +60,8 @@ public class LineInstructionInfo {
      */
     protected boolean hasExceptionTarget;
 
+    protected InstructionHandle lineInstructionHandle;
+
     public LineInstructionInfo() {
     }
 
@@ -80,6 +83,7 @@ public class LineInstructionInfo {
         this.returnInstructions = this.extractReturnInstructions();
         this.exitInstructions = this.extractExitInstructions(method);
         this.hasExceptionTarget = this.detectExceptionTarget(methodGen);
+        this.lineInstructionHandle = lineNumberGen.getInstruction();
     }
 
     public static List<LineInstructionInfo> buildLineInstructions(final ClassGen classGen,
@@ -141,6 +145,14 @@ public class LineInstructionInfo {
         return invokeInstructions;
     }
 
+    public InstructionHandle getLineInstructionHandle() {
+        return lineInstructionHandle;
+    }
+
+    public void setLineInstructionHandle(InstructionHandle lineInstructionHandle) {
+        this.lineInstructionHandle = lineInstructionHandle;
+    }
+
     public int getLineNumber() {
         return this.lineNumber;
     }
@@ -195,10 +207,12 @@ public class LineInstructionInfo {
         final InstructionList instructionList,
         final LineNumberTable lineNumberTable) {
         List<InstructionHandle> instructions = new ArrayList<>();
-        for (InstructionHandle ih = instructionList.getStart(); ih != null; ih = ih.getNext()) {
-            final int instructionLineNumber = lineNumberTable.getSourceLine(ih.getPosition());
-            if (instructionLineNumber == lineNumber) {
-                instructions.add(ih);
+        Iterator<?> iter = instructionList.iterator();
+        while (iter.hasNext()) {
+            InstructionHandle insHandle = (InstructionHandle) iter.next();
+            int instructionLine = lineNumberTable.getSourceLine(insHandle.getPosition());
+            if (instructionLine == lineNumber) {
+                instructions.add(insHandle);
             }
         }
         return instructions;

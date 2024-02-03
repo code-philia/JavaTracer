@@ -1,5 +1,7 @@
 package org.cophi.javatracer.utils;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
@@ -71,11 +73,34 @@ public class JavaTracerUtils {
     }
 
     public static String encodeArgumentNames(final String[] argumentNames) {
+        if (argumentNames.length == 0) {
+            return "";
+        }
         return String.join(JavaTracerUtils.ARG_TYPE_SEPARATOR, argumentNames);
     }
 
     public static String encodeArgumentTypes(final Type[] argumentTypes) {
-        return StringUtils.join(JavaTracerUtils.ARG_TYPE_SEPARATOR, (Object) argumentTypes);
+        if (argumentTypes.length == 0) {
+            return "";
+        }
+        return Arrays.stream(argumentTypes).map(Type::getSignature)
+            .collect(Collectors.joining(JavaTracerUtils.ARG_TYPE_SEPARATOR));
+    }
+
+    public static String[] decodeArgumentNames(final String argumentNameCode) {
+        String[] res = argumentNameCode.split(JavaTracerUtils.ARG_TYPE_SEPARATOR);
+        if (res.length == 1 && res[0].equals(argumentNameCode)) {
+            return new String[0];
+        }
+        return res;
+    }
+
+    public static String[] decodeArgumentTypes(final String argumentTypeCode) {
+        String[] res = argumentTypeCode.split(JavaTracerUtils.ARG_TYPE_SEPARATOR);
+        if (res.length == 1 && res[0].equals(argumentTypeCode)) {
+            return new String[0];
+        }
+        return res;
     }
 
     public static String encodeArgumentTypes(final MethodGen methodGen) {

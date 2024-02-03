@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.Stack;
 import org.cophi.javatracer.algorithm.GraphDiff;
 import org.cophi.javatracer.algorithm.HierarchyGraphDiffer;
+import org.cophi.javatracer.instrumentation.runtime.InvokingDetail;
 import org.cophi.javatracer.model.location.BreakPoint;
 import org.cophi.javatracer.model.scope.Scope;
 import org.cophi.javatracer.model.variables.AttributionVar;
@@ -46,18 +47,17 @@ public class TraceNode implements Comparator<TraceNode> {
     public boolean confirmed = false;
     protected List<VarValue> readVariables = new ArrayList<>();
     protected List<VarValue> writtenVariables = new ArrayList<>();
-
+    protected InvokingDetail invokingDetail = null;
     protected double suspiciousness = -1.0d;
     protected double correctness = -1.0d;
     private int checkTime = -1;
-
-//	private List<VarValue> hiddenReadVariables = new ArrayList<>();
-//	private List<VarValue> hiddenWrittenVariables = new ArrayList<>();
-
     //	private Map<TraceNode, List<String>> dataDominators = new HashMap<>();
 //	private Map<TraceNode, List<String>> dataDominatees = new HashMap<>();
     private BreakPoint breakPoint;
     private BreakPointValue programState;
+
+    //	private List<VarValue> hiddenReadVariables = new ArrayList<>();
+//	private List<VarValue> hiddenWrittenVariables = new ArrayList<>();
     private BreakPointValue afterStepInState;
     private BreakPointValue afterStepOverState;
     private List<GraphDiff> consequences;
@@ -101,11 +101,26 @@ public class TraceNode implements Comparator<TraceNode> {
 
     public TraceNode(BreakPoint breakPoint, BreakPointValue programState, int order, Trace trace,
         String bytecode) {
-        super();
+        this(breakPoint, programState, order, trace, -1, -1, System.currentTimeMillis(), bytecode);
+    }
+
+    public TraceNode(BreakPoint breakPoint, BreakPointValue programState, int order, Trace trace,
+        int initReadVarsSize, int initWrittenVarsSize, long timestamp, String bytecode) {
         this.breakPoint = breakPoint;
-        this.programState = programState;
         this.order = order;
         this.trace = trace;
+        if (initReadVarsSize >= 0) {
+            readVariables = new ArrayList<>(initReadVarsSize);
+        } else {
+            readVariables = new ArrayList<>();
+        }
+
+        if (initWrittenVarsSize >= 0) {
+            writtenVariables = new ArrayList<>(initWrittenVarsSize);
+        } else {
+            writtenVariables = new ArrayList<>();
+        }
+        this.timestamp = timestamp;
         this.bytecode = bytecode;
     }
 
@@ -295,14 +310,6 @@ public class TraceNode implements Comparator<TraceNode> {
         return node.getOrder();
     }
 
-//	public Boolean getMarkedCorrrect() {
-//		return markedCorrrect;
-//	}
-//
-//	public void setMarkedCorrrect(Boolean markedCorrrect) {
-//		this.markedCorrrect = markedCorrrect;
-//	}
-
     public List<TraceNode> getAbstractChildren() {
         List<TraceNode> abstractChildren = new ArrayList<>();
 
@@ -336,10 +343,6 @@ public class TraceNode implements Comparator<TraceNode> {
 
         return abstractChildren;
     }
-//
-//	public void setAfterState(BreakPointValue afterState) {
-//		this.afterStepInState = afterState;
-//	}
 
     public int getAbstractionLevel() {
         int level = 0;
@@ -351,6 +354,14 @@ public class TraceNode implements Comparator<TraceNode> {
 
         return level;
     }
+
+//	public Boolean getMarkedCorrrect() {
+//		return markedCorrrect;
+//	}
+//
+//	public void setMarkedCorrrect(Boolean markedCorrrect) {
+//		this.markedCorrrect = markedCorrrect;
+//	}
 
     public TraceNode getAbstractionParent() {
         TraceNode invocationParent = getInvocationParent();
@@ -368,6 +379,10 @@ public class TraceNode implements Comparator<TraceNode> {
             return abstractionParent;
         }
     }
+//
+//	public void setAfterState(BreakPointValue afterState) {
+//		this.afterStepInState = afterState;
+//	}
 
     public BreakPointValue getAfterState() {
         if (this.afterStepOverState != null) {
@@ -583,6 +598,14 @@ public class TraceNode implements Comparator<TraceNode> {
 
     public void setInvocationParent(TraceNode invocationParent) {
         this.invocationParent = invocationParent;
+    }
+
+    public InvokingDetail getInvokingDetail() {
+        return invokingDetail;
+    }
+
+    public void setInvokingDetail(InvokingDetail invokingDetail) {
+        this.invokingDetail = invokingDetail;
     }
 
     public TraceNode getInvokingMatchNode() {

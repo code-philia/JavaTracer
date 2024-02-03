@@ -22,7 +22,6 @@ public abstract class Variable implements Serializable, Cloneable {
      * Indicate this is written variable
      */
     public static String WRITTEN = "written";
-
     /**
      * Type of the variable
      */
@@ -31,12 +30,10 @@ public abstract class Variable implements Serializable, Cloneable {
      * Name of the variable
      */
     protected String variableName;
-
     /**
      * AliasVarId is the JVM heap address
      */
     protected String aliasVarID;
-
     /**
      * The id of an object (non-primitive type) is its object id + the order of trace node defining
      * it, e.g., 100.a:33 .
@@ -59,6 +56,7 @@ public abstract class Variable implements Serializable, Cloneable {
      * <code>Variable.concanateLocalVarID()</code><br>
      */
     protected String varID;
+    protected String rtType;
 
     public Variable(String name, String type) {
         this.variableName = name;
@@ -74,7 +72,7 @@ public abstract class Variable implements Serializable, Cloneable {
     }
 
     public static String concatenateLocalVarID(String className, String varName, int startLine,
-        int endLine) {
+        int endLine, int invocationLayer) {
         String clazzName = className.replace(".", "/");
         return clazzName + "{" + startLine + "," + endLine + "}" + varName;
     }
@@ -117,6 +115,10 @@ public abstract class Variable implements Serializable, Cloneable {
         this.variableName = variableName;
     }
 
+    public String getRuntimeType() {
+        return this.rtType;
+    }
+
     public abstract String getSimpleName();
 
     public String getType() {
@@ -143,5 +145,9 @@ public abstract class Variable implements Serializable, Cloneable {
      */
     public void setVarID(String varID) {
         this.varID = varID;
+    }
+
+    public void setRtType(String rtType) {
+        this.rtType = rtType;
     }
 }

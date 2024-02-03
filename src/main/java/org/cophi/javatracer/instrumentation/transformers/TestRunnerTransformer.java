@@ -44,7 +44,7 @@ public class TestRunnerTransformer extends AbstractTransformer {
             try {
                 return this.instrument(className, classfileBuffer);
             } catch (Throwable throwable) {
-                Log.error(throwable.getLocalizedMessage());
+                Log.error(throwable.getLocalizedMessage(), this.getClass());
                 return classfileBuffer;
             }
         }
